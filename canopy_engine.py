@@ -13,7 +13,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 NAV_BAR = """
 <nav style="background: #1e1e1e; padding: 10px; margin-bottom: 20px; border-bottom: 2px solid #00ff66;">
     <a href="/" style="color: #00ff66; margin-right: 15px; text-decoration: none; font-weight: bold;">[D1: Foundation]</a>
-    <a href="/leads" style="color: #00ff66; margin-right: 15px; text-decoration: none; font-weight: bold;">[D2: Leads]</a>
+    <a href="/leads" style="color: #00ff66; margin-right: 15px; text-decoration: none; font-weight: bold;">[D2: Lead Search]</a>
     <a href="/dispatch" style="color: #00ff66; margin-right: 15px; text-decoration: none; font-weight: bold;">[D3: Dispatch]</a>
     <a href="/callbacks" style="color: #00ff66; margin-right: 15px; text-decoration: none; font-weight: bold;">[D4: Callbacks]</a>
     <a href="/hazards" style="color: #00ff66; margin-right: 15px; text-decoration: none; font-weight: bold;">[D5: Spatial Hazards]</a>
@@ -26,12 +26,17 @@ BASE_STYLE = """
     body { font-family: monospace; background: #121212; color: #00ff66; padding: 20px; margin: 0; }
     h1, h2 { color: #fff; border-bottom: 1px solid #333; padding-bottom: 8px; }
     .card { background: #1e1e1e; border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+    .lead-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-top: 15px; }
+    .lead-card { background: #1a1a1a; border: 1px solid #00ff66; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; }
+    .lead-img { width: 100%; height: 180px; object-fit: cover; background: #222; border-bottom: 1px solid #333; }
+    .lead-content { padding: 15px; flex-grow: 1; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #181818; }
     th, td { border: 1px solid #333; padding: 10px; text-align: left; color: #ddd; }
     th { background: #222; color: #00ff66; }
     .btn { background: #00ff66; color: #121212; padding: 8px 12px; border: none; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; }
     .btn-sold { background: #ff3333; color: #fff; }
     .badge { background: #333; color: #ffaa00; padding: 3px 6px; font-size: 0.8em; border-radius: 3px; }
+    .search-bar { background: #181818; border: 1px solid #00ff66; padding: 10px; width: 100%; color: #fff; font-family: monospace; margin-bottom: 15px; box-sizing: border-box; }
 </style>
 """
 
@@ -49,31 +54,66 @@ def d1_foundation():
 
 @app.route("/leads")
 def d2_leads():
-    try:
-        res = supabase.table("leads").select("*").execute()
-        leads = res.data if res.data and len(res.data) > 0 else None
-    except Exception:
-        leads = None
+    search_query = request.args.get("q", "").lower()
+    
+    # Comprehensive mock lead dataset with front-facing property image placeholders
+    all_leads = [
+        {
+            "id": 101, 
+            "name": "Valley Solar & Prep LLC", 
+            "parcel": "70226200 (Unit G-2)", 
+            "phone": "(719) 555-0142", 
+            "status": "Pending Opt-in", 
+            "image": "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600&auto=format&fit=crop&q=80"
+        },
+        {
+            "id": 102, 
+            "name": "Blanca Off-Grid Builders", 
+            "parcel": "4962 Stoner Road", 
+            "phone": "(719) 555-0189", 
+            "status": "Callback Due", 
+            "image": "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=600&auto=format&fit=crop&q=80"
+        },
+        {
+            "id": 103, 
+            "name": "San Luis Trenching Services", 
+            "parcel": "Costilla Sector 4", 
+            "phone": "(719) 555-0233", 
+            "status": "Estimate Sent", 
+            "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80"
+        }
+    ]
 
-    if not leads:
-        leads = [
-            {"id": 101, "name": "Valley Solar & Prep LLC", "phone": "(719) 555-0142", "status": "Mock Trial Lead - Pending Opt-in"},
-            {"id": 102, "name": "Blanca Off-Grid Builders", "phone": "(719) 555-0189", "status": "Mock Trial Lead - Callback Due"},
-            {"id": 103, "name": "San Luis Trenching Services", "phone": "(719) 555-0233", "status": "Mock Trial Lead - Estimate Sent"}
-        ]
+    if search_query:
+        leads = [l for l in all_leads if search_query in l["name"].lower() or search_query in l["parcel"].lower() or search_query in l["phone"]]
+    else:
+        leads = all_leads
     
     return render_template_string(BASE_STYLE + NAV_BAR + """
-    <h1>D2 B2B Lead Generation <span class="badge">Mock / Trial Mode</span></h1>
+    <h1>D2 B2B Lead Search & Visual Cards <span class="badge">Mock / Trial Mode</span></h1>
     <div class="card">
-        <h3>Active Lead Ingestion Queue</h3>
-        <table>
-            <tr><th>ID</th><th>Company / Name</th><th>Phone</th><th>Status</th></tr>
-            {% for l in leads %}
-            <tr><td>{{ l.id }}</td><td>{{ l.name }}</td><td>{{ l.phone }}</td><td>{{ l.status }}</td></tr>
-            {% endfor %}
-        </table>
+        <form method="GET" action="/leads">
+            <input type="text" name="q" class="search-bar" value="{{ query }}" placeholder="Search leads by company, parcel, or phone...">
+            <button type="submit" class="btn">Filter Leads</button>
+            <a href="/leads" class="btn" style="background:#333; color:#00ff66; margin-left:10px;">Reset</a>
+        </form>
     </div>
-    """, leads=leads)
+
+    <div class="lead-grid">
+        {% for l in leads %}
+        <div class="lead-card">
+            <img src="{{ l.image }}" alt="Property Front View" class="lead-img">
+            <div class="lead-content">
+                <h3 style="margin-top:0; color:#fff;">{{ l.name }}</h3>
+                <p><strong>Parcel:</strong> {{ l.parcel }}</p>
+                <p><strong>Phone:</strong> {{ l.phone }}</p>
+                <p><strong>Status:</strong> <span class="badge">{{ l.status }}</span></p>
+                <a href="/estimator?client={{ l.name }}" class="btn" style="margin-top:10px; width:100%; text-align:center; box-sizing:border-box;">Load into Estimator</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    """, leads=leads, query=search_query)
 
 @app.route("/dispatch")
 def d3_dispatch():
@@ -138,6 +178,7 @@ def d5_hazards():
 @app.route("/estimator", methods=["GET", "POST"])
 def d6_estimator():
     msg = ""
+    default_client = request.args.get("client", "")
     if request.method == "POST":
         client_name = request.form.get("client_name")
         msg = f"Job for {client_name} marked as SOLD & Dispatched (Trial Mode)!"
@@ -148,11 +189,11 @@ def d6_estimator():
         {% if msg %}<p style="color: #00ff66; font-weight: bold;">{{ msg }}</p>{% endif %}
         <form method="POST">
             <label>Client Name / Parcel:</label><br><br>
-            <input type="text" name="client_name" style="padding: 8px; width: 300px; background: #222; color: #fff; border: 1px solid #444;" required><br><br>
+            <input type="text" name="client_name" value="{{ default_client }}" style="padding: 8px; width: 300px; background: #222; color: #fff; border: 1px solid #444;" required><br><br>
             <button type="submit" class="btn btn-sold">INSTANT 'SOLD' & DISPATCH</button>
         </form>
     </div>
-    """, msg=msg)
+    """, msg=msg, default_client=default_client)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
