@@ -1,6 +1,14 @@
 services:
   - type: web
-    name: canopy-command-app
+    name: canopy-command-d4-dialer
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn server:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+  - type: web
+    name: canopy-command-d6-admin
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn server:app

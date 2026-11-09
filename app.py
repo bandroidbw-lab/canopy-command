@@ -23,7 +23,7 @@ def d4_text_demo():
 def d4_zip_subscriptions_demo():
     return render_template('d4phone/dialer/d2admindemo/zipsubscriptionsdemo/index.html')
 
-# --- D6 Admin & Member Routes ---
+# --- D6 Admin Routes ---
 @app.route('/d6')
 def d6_admin_root():
     return jsonify({
