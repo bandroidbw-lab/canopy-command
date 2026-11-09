@@ -4,11 +4,11 @@ from flask import Flask, jsonify
 app = Flask(__name__)
 
 @app.route('/d6/admin/status', methods=['GET'])
-def admin_status():
+def d6_admin_status():
     return jsonify({
-        "service": "d6-admin-dashboard",
+        "service": "d6-admin-hub",
         "status": "operational",
-        "submodules": [
+        "managed_directories": [
             "anchoraddress",
             "d2member",
             "onboarding",
