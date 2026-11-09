@@ -3,8 +3,8 @@ services:
     name: canopy-command-d4-dialer
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: .venv/bin/gunicorn server:app
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: gunicorn server:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.0
@@ -12,8 +12,8 @@ services:
     name: canopy-command-d6-admin
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: .venv/bin/gunicorn server:app
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: gunicorn server:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.0
