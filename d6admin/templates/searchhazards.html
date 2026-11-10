@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D6 Search Hazards - Contractor Queue</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; margin: 40px; }
+        .card { background: #1e293b; padding: 30px; border-radius: 8px; max-width: 600px; margin: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        h1 { color: #38bdf8; margin-top: 0; }
+        p { color: #94a3b8; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; }
+        input[type="text"], select { width: 100%; padding: 12px; border-radius: 4px; border: 1px solid #334155; background: #0f172a; color: #f8fafc; box-sizing: border-box; }
+        button { background: #38bdf8; color: #0f172a; border: none; padding: 12px 20px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; }
+        button:hover { background: #7dd3fc; }
+        .back-link { display: inline-block; margin-top: 15px; color: #38bdf8; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Search Hazards & D2 Queue Loading</h1>
+        <p>Configure contractor-specific standard search criteria and save default engine parameters for automated D2 admin queue loading.</p>
+        
+        <form method="POST" action="/d6/searchhazards/save">
+            <div class="form-group">
+                <label for="contractor_id">Contractor / Operator:</label>
+                <input type="text" id="contractor_id" name="contractor_id" value="Bailey's Complete Tree Service" required>
+            </div>
+            <div class="form-group">
+                <label for="search_radius">Default Search Radius (Miles):</label>
+                <input type="text" id="search_radius" name="search_radius" value="5.0" required>
+            </div>
+            <div class="form-group">
+                <label for="hazard_tier">Hazard Priority Tier:</label>
+                <select id="hazard_tier" name="hazard_tier">
+                    <option value="tier_1">Tier 1 - Immediate Structural Threat ($3.50 Scan)</option>
+                    <option value="tier_2" selected>Tier 2 - Standard Hazard Review ($2.00 Scan)</option>
+                </select>
+            </div>
+            <button type="submit">Save Criteria & Load D2 Queue</button>
+        </form>
+
+        <a href="/" class="back-link">&larr; Back to D6 Admin Hub</a>
+    </div>
+</body>
+</html>
