@@ -1,52 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canopy Command - D6 Admin Hub</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; margin: 40px; }
-        .card { background: #1e293b; padding: 30px; border-radius: 8px; max-width: 600px; margin: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        h1 { color: #38bdf8; margin-top: 0; }
-        p { color: #94a3b8; }
-        ul { list-style: none; padding: 0; margin-top: 20px; }
-        li { background: #334155; margin: 10px 0; padding: 15px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
-        span { font-weight: bold; color: #f8fafc; }
-        a { background: #38bdf8; color: #0f172a; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 14px; }
-        a:hover { background: #7dd3fc; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D6 Admin Hub</title>
+<style>
+    body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; margin: 40px; }
+    .card { background: #1e293b; padding: 30px; border-radius: 8px; max-width: 600px; margin: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+    h1 { color: #38bdf8; margin-top: 0; }
+    p { color: #94a3b8; }
+    .menu-list { list-style: none; padding: 0; margin-top: 20px; }
+    .menu-list li { margin-bottom: 12px; }
+    .menu-list a { display: block; padding: 12px 18px; background: #0f172a; color: #38bdf8; text-decoration: none; border-radius: 4px; border: 1px solid #334155; font-weight: bold; }
+    .menu-list a:hover { background: #334155; }
+</style>
 </head>
 <body>
-    <div class="card">
-        <h1>D6 Admin & Operations Hub</h1>
-        <p>Select an operational submodule below:</p>
-        
-        <ul>
-            <li>
-                <span>Ad-Hoc White Glove Search</span>
-                <a href="/d6/adhoc">Open</a>
-            </li>
-            <li>
-                <span>Anchor Address</span>
-                <a href="/d6/anchoraddress">Open</a>
-            </li>
-            <li>
-                <span>Search Hazards</span>
-                <a href="/d6/searchhazards">Open</a>
-            </li>
-            <li>
-                <span>Reports</span>
-                <a href="/d6/reports">Open</a>
-            </li>
-            <li>
-                <span>Onboarding</span>
-                <a href="/d6/onboarding">Open</a>
-            </li>
-        </ul>
+<div class="card">
+    <h1>D6 Admin Hub & Control Center</h1>
+    <p>Manage administrative hubs, ad-hoc scans, anchor addresses, hazard searches, reports, and client onboarding.</p>
+
+    <ul class="menu-list">
+        <li><a href="/d6/adhoc">&rarr; Ad-Hoc Scans</a></li>
+        <li><a href="/d6/anchoraddress">&rarr; Anchor Addresses</a></li>
+        <li><a href="/d6/searchhazards">&rarr; Search Hazards & D2 Queue</a></li>
+        <li><a href="/d6/onboarding">&rarr; Client Onboarding & Subscriptions</a></li>
+        <li><a href="/d6/reports">&rarr; Operations & Reports Dashboard</a></li>
+    </ul>
+
+    <div style="margin-top: 20px; padding: 15px; background: #1e293b; border-radius: 8px; border: 1px solid #334155;">
+        <h3 style="color: #38bdf8; margin-top: 0;">D4 Communication Hub</h3>
+        <p style="color: #94a3b8;">Access the live D4 dialer interface and remote VoIP tools.</p>
+        <a href="https://canopy-command-d4-dialer.onrender.com" target="_blank" style="display: inline-block; background: #38bdf8; color: #0f172a; padding: 10px 16px; font-weight: bold; border-radius: 4px; text-decoration: none;">Open D4 Dialer &rarr;</a>
     </div>
-</body>
-</html><div style="margin-top: 20px; padding: 15px; background: #1e293b; border-radius: 8px; border: 1px solid #334155;">
-<h3 style="color: #38bdf8; margin-top: 0;">D4 Communication Hub</h3>
-<p style="color: #94a3b8;">Access the D4 dialer interface, live call queues, and OpenPhone tools.</p>
-<a href="http://localhost:5000" target="_blank" style="display: inline-block; background: #38bdf8; color: #0f172a; padding: 10px 16px; font-weight: bold; border-radius: 4px; text-decoration: none;">Open D4 Dialer &rarr;</a>
 </div>
+</body>
+</html>
