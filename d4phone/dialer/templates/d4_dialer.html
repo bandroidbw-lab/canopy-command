@@ -9,3 +9,38 @@
     <p>Operational interface for high-density commercial canopy cold calling.</p>
 </body>
 </html>
+<!-- D4 Live Call Conversion & Onboarding Push Button -->
+<div style="margin-top: 20px; padding: 15px; background: #1e293b; border-radius: 8px; border: 1px solid #334155;">
+<h3 style="color: #38bdf8; margin-top: 0;">Live Call Conversion</h3>
+<button id="convertBtn" onclick="triggerOnboardingConversion()" style="background: #22c55e; color: white; padding: 12px 24px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; width: 100%;">
+    Convert Call & Populate D6 Onboarding
+</button>
+</div>
+
+<script>
+function triggerOnboardingConversion() {
+const clientData = {
+    client_name: document.getElementById('caller_name')?.value || "Active Call Prospect",
+    address: document.getElementById('caller_address')?.value || "On-Site Location",
+    zip: document.getElementById('caller_zip')?.value || "00000",
+    comp_leads: 5,
+    trial_length: 14,
+    comp_subscriptions: 1
+};
+
+fetch('https://canopy-command.onrender.com/d6/onboarding/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams(clientData)
+})
+.then(response => {
+    if (response.ok) {
+        alert('Success! Prospect converted and pushed to D6 Onboarding queue.');
+        window.open('https://canopy-command.onrender.com/d6/reports', '_blank');
+    } else {
+        alert('Conversion push failed. Please check connection.');
+    }
+})
+.catch(err => console.error('Error pushing conversion:', err));
+}
+</script>
