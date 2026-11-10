@@ -1,40 +1,16 @@
 import os
-from flask import Flask, jsonify, render_template_string
+from flask import Flask, jsonify
 
 app = Flask(__name__)
 
-@app.route('/')
-def d6_dashboard():
-    try:
-        # Fallback inline HTML rendering if templates folder is missing
-        return render_template_string("""
-            <!DOCTYPE html>
-            <html>
-            <head><title>D6 Admin Hub</title></head>
-            <body style="font-family: Arial; background: #0f172a; color: #fff; padding: 40px;">
-                <h1>D6 Admin & Operations Hub</h1>
-                <p>Status: Operational</p>
-                <ul>
-                    <li>anchoraddress</li>
-                    <li>d2member</li>
-                    <li>onboarding</li>
-                    <li>reports</li>
-                    <li>searchhazards</li>
-                </ul>
-            </body>
-            </html>
-        """)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/d6/admin/status', methods=['GET'])
-def admin_status():
+@app.route('/', methods=['GET'])
+def d6_home():
     return jsonify({
-        "service": "d6-admin-hub",
+        "service": "canopy-command-d6-admin",
         "status": "operational",
         "submodules": [
+            "adhoc",
             "anchoraddress",
-            "d2member",
             "onboarding",
             "reports",
             "searchhazards"

@@ -4,7 +4,7 @@ services:
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn d4phone.dialer.server:app
+    startCommand: gunicorn d4phone.server:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.0
@@ -15,6 +15,26 @@ services:
     plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn d6admin.server:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+
+  - type: web
+    name: canopy-command-d2-member
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn d2member.server:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+
+  - type: web
+    name: canopy-command-d2-demo
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn d2admindemo.server:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.0
