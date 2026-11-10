@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D6 Operations & Reports Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; margin: 30px; }
+        .container { max-width: 900px; margin: auto; }
+        .card { background: #1e293b; padding: 25px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        h1, h2 { color: #38bdf8; margin-top: 0; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: #0f172a; padding: 15px; border-radius: 6px; text-align: center; border: 1px solid #334155; }
+        .stat-box h3 { margin: 0; font-size: 24px; color: #38bdf8; }
+        .stat-box p { margin: 5px 0 0; color: #94a3b8; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; font-size: 14px; }
+        th { color: #38bdf8; }
+        .back-link { display: inline-block; margin-top: 20px; color: #38bdf8; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Operations & Reports Dashboard</h1>
+        <p>Comprehensive audit logs and telemetry across all D6 admin submodules.</p>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <h3>{{ total_adhoc }}</h3>
+                <p>Ad-Hoc Scans</p>
+            </div>
+            <div class="stat-box">
+                <h3>{{ total_anchor }}</h3>
+                <p>Anchor Addresses</p>
+            </div>
+            <div class="stat-box">
+                <h3>{{ total_criteria }}</h3>
+                <p>Search Criteria</p>
+            </div>
+            <div class="stat-box">
+                <h3>{{ total_clients }}</h3>
+                <p>Onboarded Clients</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Onboarded Clients</h2>
+            {% if clients %}
+            <table>
+                <tr><th>Client Name</th><th>Address</th><th>Zip</th><th>Comp Leads</th><th>Trial Days</th></tr>
+                {% for c in clients %}
+                <tr><td>{{ c.client }}</td><td>{{ c.address }}</td><td>{{ c.zip }}</td><td>{{ c.comp_leads }}</td><td>{{ c.trial_days }}</td></tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <p style="color: #94a3b8;">No clients onboarded yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <h2>Contractor Search Criteria</h2>
+            {% if criteria %}
+            <table>
+                <tr><th>Contractor</th><th>Radius</th><th>Tier</th></tr>
+                {% for sc in criteria %}
+                <tr><td>{{ sc.contractor }}</td><td>{{ sc.radius }} mi</td><td>{{ sc.tier }}</td></tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <p style="color: #94a3b8;">No search criteria saved yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <h2>Anchor Addresses</h2>
+            {% if anchors %}
+            <table>
+                <tr><th>Anchor Name</th><th>Coordinates / Legal Description</th></tr>
+                {% for a in anchors %}
+                <tr><td>{{ a.name }}</td><td>{{ a.coordinates }}</td></tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <p style="color: #94a3b8;">No anchor addresses recorded yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <h2>Ad-Hoc Scans</h2>
+            {% if adhoc_scans %}
+            <table>
+                <tr><th>Property Address</th><th>Notes</th></tr>
+                {% for s in adhoc_scans %}
+                <tr><td>{{ s.address }}</td><td>{{ s.notes }}</td></tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <p style="color: #94a3b8;">No ad-hoc scans recorded yet.</p>
+            {% endif %}
+        </div>
+
+        <a href="/" class="back-link">&larr; Back to D6 Admin Hub</a>
+    </div>
+</body>
+</html>
