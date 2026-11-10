@@ -16,7 +16,8 @@ def adhoc_view():
 
 @app.route('/d6/anchoraddress', methods=['GET'])
 def anchor_address_view():
-    return jsonify({"module": "anchoraddress", "status": "active", "description": "Anchor address submodule"})
+    # Renders d6admin/templates/anchoraddress.html for anchor parcel management
+    return render_template('anchoraddress.html')
 
 @app.route('/d6/searchhazards', methods=['GET'])
 def search_hazards_view():
