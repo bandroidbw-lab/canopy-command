@@ -21,7 +21,8 @@ def anchor_address_view():
 
 @app.route('/d6/searchhazards', methods=['GET'])
 def search_hazards_view():
-    return jsonify({"module": "searchhazards", "status": "active", "description": "Search hazards submodule"})
+    # Renders d6admin/templates/searchhazards.html for contractor default search criteria and D2 queue loading
+    return render_template('searchhazards.html')
 
 @app.route('/d6/reports', methods=['GET'])
 def reports_view():
