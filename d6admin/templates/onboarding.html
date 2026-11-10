@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D6 Client Onboarding & Subscriptions</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; margin: 40px; }
+        .card { background: #1e293b; padding: 30px; border-radius: 8px; max-width: 650px; margin: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        h1 { color: #38bdf8; margin-top: 0; }
+        p { color: #94a3b8; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; }
+        input[type="text"], input[type="number"], select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #334155; background: #0f172a; color: #f8fafc; box-sizing: border-box; }
+        .row { display: flex; gap: 15px; }
+        .col { flex: 1; }
+        button { background: #38bdf8; color: #0f172a; border: none; padding: 12px 20px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px; }
+        button:hover { background: #7dd3fc; }
+        .back-link { display: inline-block; margin-top: 15px; color: #38bdf8; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Client Onboarding & Subscription Hub</h1>
+        <p>Manage contractor accounts, complimentary leads, trial terms, and on-the-fly subscription adjustments.</p>
+        
+        <form method="POST" action="/d6/onboarding/save">
+            <div class="form-group">
+                <label for="client_name">Contractor / Business Name:</label>
+                <input type="text" id="client_name" name="client_name" placeholder="e.g., Bailey's Complete Tree Service" required>
+            </div>
+
+            <div class="form-group">
+                <label for="address">Street Address:</label>
+                <input type="text" id="address" name="address" placeholder="e.g., 405 Dekalb St">
+            </div>
+
+            <div class="row">
+                <div class="col form-group">
+                    <label for="city">City:</label>
+                    <input type="text" id="city" name="city" placeholder="e.g., Shelby">
+                </div>
+                <div class="col form-group">
+                    <label for="zip">Zip Code:</label>
+                    <input type="text" id="zip" name="zip" placeholder="e.g., 28150" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col form-group">
+                    <label for="comp_leads">Complimentary Leads:</label>
+                    <input type="number" id="comp_leads" name="comp_leads" value="5">
+                </div>
+                <div class="col form-group">
+                    <label for="trial_length">Trial Length (Days):</label>
+                    <input type="number" id="trial_length" name="trial_length" value="14">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="comp_subscriptions">Complimentary Monthly Subscriptions:</label>
+                <input type="number" id="comp_subscriptions" name="comp_subscriptions" value="1">
+            </div>
+
+            <button type="submit">Save & Update Onboarding Profile</button>
+        </form>
+
+        <a href="/" class="back-link">&larr; Back to D6 Admin Hub</a>
+    </div>
+</body>
+</html>

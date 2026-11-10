@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 
 # Initialize Flask and point template_folder to the local templates directory
 app = Flask(__name__, template_folder='templates')
@@ -21,7 +21,7 @@ def anchor_address_view():
 
 @app.route('/d6/searchhazards', methods=['GET'])
 def search_hazards_view():
-    # Renders d6admin/templates/searchhazards.html for contractor default search criteria and D2 queue loading
+    # Renders d6admin/templates/searchhazards.html for contractor search criteria and D2 queue loading
     return render_template('searchhazards.html')
 
 @app.route('/d6/reports', methods=['GET'])
@@ -30,7 +30,8 @@ def reports_view():
 
 @app.route('/d6/onboarding', methods=['GET'])
 def onboarding_view():
-    return jsonify({"module": "onboarding", "status": "active", "description": "Onboarding submodule"})
+    # Renders d6admin/templates/onboarding.html for client registration, subscriptions, and live call conversion hooks
+    return render_template('onboarding.html')
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
