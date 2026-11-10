@@ -1,18 +1,34 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 
-# Tell Flask explicitly where to find the templates folder inside d6admin/
+# Initialize Flask and point template_folder to the local templates directory
 app = Flask(__name__, template_folder='templates')
 
 @app.route('/', methods=['GET'])
 def d6_home():
-    # Renders d6admin/templates/index.html
+    # Renders d6admin/templates/index.html with links to all submodules
     return render_template('index.html')
 
+@app.route('/d6/adhoc', methods=['GET'])
+def adhoc_view():
+    # Renders d6admin/templates/adhoc.html for single-address white glove hazard searches
+    return render_template('adhoc.html')
+
+@app.route('/d6/anchoraddress', methods=['GET'])
+def anchor_address_view():
+    return jsonify({"module": "anchoraddress", "status": "active", "description": "Anchor address submodule"})
+
+@app.route('/d6/searchhazards', methods=['GET'])
+def search_hazards_view():
+    return jsonify({"module": "searchhazards", "status": "active", "description": "Search hazards submodule"})
+
 @app.route('/d6/reports', methods=['GET'])
-def d6_reports():
-    # Renders d6admin/templates/reports.html
-    return render_template('reports.html')
+def reports_view():
+    return jsonify({"module": "reports", "status": "active", "description": "Reports submodule"})
+
+@app.route('/d6/onboarding', methods=['GET'])
+def onboarding_view():
+    return jsonify({"module": "onboarding", "status": "active", "description": "Onboarding submodule"})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))

@@ -1,10 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>D6 Admin Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canopy Command - D6 Admin Hub</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; margin: 40px; }
+        .card { background: #1e293b; padding: 30px; border-radius: 8px; max-width: 600px; margin: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        h1 { color: #38bdf8; margin-top: 0; }
+        p { color: #94a3b8; }
+        ul { list-style: none; padding: 0; margin-top: 20px; }
+        li { background: #334155; margin: 10px 0; padding: 15px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
+        span { font-weight: bold; color: #f8fafc; }
+        a { background: #38bdf8; color: #0f172a; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 14px; }
+        a:hover { background: #7dd3fc; }
+    </style>
 </head>
 <body>
-    <h1>Welcome to D6 Admin Hub</h1>
-    <p>Operational submodules active.</p>
+    <div class="card">
+        <h1>D6 Admin & Operations Hub</h1>
+        <p>Select an operational submodule below:</p>
+        
+        <ul>
+            <li>
+                <span>Ad-Hoc White Glove Search</span>
+                <a href="/d6/adhoc">Open</a>
+            </li>
+            <li>
+                <span>Anchor Address</span>
+                <a href="/d6/anchoraddress">Open</a>
+            </li>
+            <li>
+                <span>Search Hazards</span>
+                <a href="/d6/searchhazards">Open</a>
+            </li>
+            <li>
+                <span>Reports</span>
+                <a href="/d6/reports">Open</a>
+            </li>
+            <li>
+                <span>Onboarding</span>
+                <a href="/d6/onboarding">Open</a>
+            </li>
+        </ul>
+    </div>
 </body>
 </html>
