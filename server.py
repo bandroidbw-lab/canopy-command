@@ -3,7 +3,6 @@ import os
 import json
 from datetime import datetime
 
-# Broadcaster Engine Definition
 class BroadcasterEngine:
 def __init__(self, target_count=50):
     self.target_count = target_count
@@ -80,7 +79,6 @@ def get_scoreboard(self):
         "duration_graph": sorted_durations
     }
 
-# Initialize Flask app pointing to templates directory
 template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'd4phone', 'templates'))
 app = Flask(__name__, template_folder=template_dir)
 engine = BroadcasterEngine(target_count=50)
