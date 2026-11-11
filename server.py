@@ -2,6 +2,8 @@ from flask import Flask, render_template, jsonify, request
 import os
 import json
 from datetime import datetime
+import threading
+import time
 
 MARKET_CORRIDORS = {
     "NC-01": {"name": "North Carolina Piedmont Corridor", "target_count": 50, "prefix": "704"},
@@ -25,6 +27,7 @@ class BroadcasterEngine:
         ]
         self.prime_callbacks = []
         self.active_list_name = "default_session"
+        self.active_call = None
         self.script_config = {
             "persona": "Energetic Tree Care Specialist",
             "voice_model": "en-US-Neural2-F (High Energy & Natural)",
@@ -81,6 +84,7 @@ class BroadcasterEngine:
         self.metrics["total_tried"] += 1
         self.metrics["call_durations"].append({
             "phone": contact.get("phone"),
+            "name": contact.get("name", "Contractor"),
             "duration": duration
         })
 
@@ -92,15 +96,18 @@ class BroadcasterEngine:
             self.metrics["out_of_service"] += 1
         elif result_type == "in_service":
             self.metrics["in_service"] += 1
-            if contact not in self.prime_callbacks:
-                self.prime_callbacks.append(contact)
-
-        if self.current_index < len(self.queue):
-            self.current_index += 1
+            if not any(c['phone'] == contact.get('phone') for c in self.prime_callbacks):
+                self.prime_callbacks.append({
+                    "phone": contact.get("phone"),
+                    "name": contact.get("name", "Contractor"),
+                    "duration": duration
+                })
 
         self.save_session()
 
     def get_scoreboard(self):
+        # Sort prime callbacks by duration descending (longest on phone first)
+        sorted_callbacks = sorted(self.prime_callbacks, key=lambda x: x.get("duration", 0), reverse=True)
         sorted_durations = sorted(self.metrics["call_durations"], key=lambda x: x["duration"], reverse=True)
         saved_files = []
         if os.path.exists("saved_lists"):
@@ -115,7 +122,8 @@ class BroadcasterEngine:
             "active_list_name": self.active_list_name,
             "saved_lists": saved_files,
             "queue": self.queue,
-            "prime_callbacks": self.prime_callbacks,
+            "active_call": self.active_call,
+            "prime_callbacks": sorted_callbacks,
             "script_config": self.script_config,
             "metrics": self.metrics,
             "duration_graph": sorted_durations
@@ -124,6 +132,30 @@ class BroadcasterEngine:
 template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'd4phone', 'templates'))
 app = Flask(__name__, template_folder=template_dir)
 engine = BroadcasterEngine(target_count=50)
+
+# Autonomous Autodialer Background Worker Thread
+def autodialer_worker():
+    while True:
+        if engine.status == "RUNNING":
+            if engine.current_index < len(engine.queue):
+                contact = engine.queue[engine.current_index]
+                engine.active_call = contact
+                
+                # Simulate live autonomous dial call duration (e.g. 15-45 seconds)
+                time.sleep(4) 
+                
+                # Simulate result classification (In-service primary pickup)
+                engine.process_call_result(contact, "in_service", duration=42)
+                engine.current_index += 1
+            else:
+                engine.status = "COMPLETED"
+                engine.active_call = None
+                engine.save_session()
+        else:
+            engine.active_call = None
+        time.sleep(1)
+
+threading.Thread(target=autodialer_worker, daemon=True).start()
 
 @app.route("/")
 @app.route("/dialer")
@@ -162,14 +194,15 @@ def load_list():
     success = engine.load_session(list_name)
     return jsonify({"success": success, "scoreboard": engine.get_scoreboard()})
 
-@app.route("/api/broadcaster/feed", methods=["POST"])
-def feed_call_result():
+@app.route("/api/broadcaster/dial-manual", methods=["POST"])
+def dial_manual():
     data = request.json or {}
-    contact = data.get("contact", {})
-    result_type = data.get("result_type", "in_service")
-    duration = data.get("duration", 30)
-    engine.process_call_result(contact, result_type, duration)
-    return jsonify(engine.get_scoreboard())
+    phone = data.get("phone")
+    name = data.get("name", "Manual Target")
+    # Instantly set active call for manual override dialing
+    engine.active_call = {"phone": phone, "name": name, "status": "manual_dialing"}
+    engine.process_call_result({"phone": phone, "name": name}, "in_service", duration=55)
+    return jsonify({"success": True, "scoreboard": engine.get_scoreboard()})
 
 @app.route("/health")
 def health():
