@@ -6,9 +6,17 @@ class BroadcasterEngine:
     def __init__(self, target_count=50):
         self.target_count = target_count
         self.active_corridor = "Lower States High-Density Canopy Corridor"
-        self.status = "IDLE" # IDLE, RUNNING, PAUSED, COMPLETED
+        self.status = "IDLE"
         self.queue = []
         self.prime_callbacks = []
+        
+        # AI Script & Voice Configuration
+        self.script_config = {
+            "persona": "Energetic Tree Care Specialist",
+            "voice_model": "en-US-Neural2-F (High Energy & Natural)",
+            "script_template": "Hello {contractor_name}, this is Canopy Command. We noticed your tree service crew operating in the {corridor} corridor and wanted to secure your spot for our upcoming high-density prime contractor quota."
+        }
+
         self.metrics = {
             "total_tried": 0,
             "in_service": 0,
@@ -18,15 +26,13 @@ class BroadcasterEngine:
             "call_durations": []
         }
 
-    def load_prospects(self, prospects):
-        """Load prospects sorted by longest-dialed-out priority."""
-        # Sort by dial duration / priority descending
-        self.queue = sorted(prospects, key=lambda x: x.get("dial_duration", 0), reverse=True)
+    def update_script(self, new_template, persona, voice_model):
+        self.script_config["script_template"] = new_template
+        self.script_config["persona"] = persona
+        self.script_config["voice_model"] = voice_model
+        return self.script_config
 
     def process_call_result(self, contact, result_type, duration=0):
-        """
-        result_type: 'in_service', 'fax', 'modem', 'out_of_service'
-        """
         self.metrics["total_tried"] += 1
         self.metrics["call_durations"].append({
             "phone": contact.get("phone"),
@@ -44,13 +50,11 @@ class BroadcasterEngine:
             if len(self.prime_callbacks) < self.target_count:
                 self.prime_callbacks.append(contact)
 
-        # Check completion quota
         if len(self.prime_callbacks) >= self.target_count:
             self.status = "COMPLETED"
             self.save_completed_list()
 
     def save_completed_list(self):
-        """Save completed 50-prime list timestamped by creation date."""
         os.makedirs("d4phone/saved_lists", exist_ok=True)
         date_str = datetime.now().strftime("%Y-%m-%d_%H%M")
         filename = f"d4phone/saved_lists/broadcast_list_{date_str}.json"
@@ -59,6 +63,7 @@ class BroadcasterEngine:
             "created_at": datetime.now().isoformat(),
             "corridor": self.active_corridor,
             "total_prime": len(self.prime_callbacks),
+            "script_used": self.script_config,
             "metrics": self.metrics,
             "contacts": self.prime_callbacks
         }
@@ -69,12 +74,12 @@ class BroadcasterEngine:
         return filename
 
     def get_scoreboard(self):
-        # Sort call durations descending for the scoreboard graph view
         sorted_durations = sorted(self.metrics["call_durations"], key=lambda x: x["duration"], reverse=True)
         return {
             "status": self.status,
             "target": self.target_count,
             "collected": len(self.prime_callbacks),
+            "script_config": self.script_config,
             "metrics": self.metrics,
             "duration_graph": sorted_durations
         }

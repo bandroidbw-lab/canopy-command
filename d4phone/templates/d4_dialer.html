@@ -1,122 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D4 Communications & Broadcaster Hub</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; margin: 20px; }
-        .container { max-width: 900px; margin: auto; }
-        .card { background: #1e293b; padding: 25px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #334155; }
-        h1, h2 { color: #38bdf8; margin-top: 0; }
-        .btn { padding: 10px 20px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; }
-        .btn-start { background: #22c55e; color: #fff; }
-        .btn-pause { background: #eab308; color: #000; }
-        .btn-stop { background: #ef4444; color: #fff; }
-        .btn:hover { opacity: 0.9; }
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 15px; }
-        .stat-box { background: #0f172a; padding: 15px; border-radius: 6px; text-align: center; border: 1px solid #334155; }
-        .stat-value { font-size: 24px; font-weight: bold; color: #38bdf8; }
-        .graph-container { margin-top: 15px; max-height: 200px; overflow-y: auto; background: #0f172a; padding: 10px; border-radius: 6px; }
-        .graph-bar { background: #38bdf8; height: 12px; margin-bottom: 6px; border-radius: 3px; transition: width 0.3s; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>D4 Communications & Broadcaster Hub</h1>
-        
-        <!-- Broadcaster Controls Card -->
-        <div class="card">
-            <h2>Broadcaster Control Center</h2>
-            <p>Status: <span id="status-badge" style="font-weight: bold; color: #38bdf8;">IDLE</span> (Target: 50 Prime Tree Contractor Contacts)</p>
-            <div>
-                <button class="btn btn-start" onclick="controlBroadcaster('start')">Start Broadcast</button>
-                <button class="btn btn-pause" onclick="controlBroadcaster('pause')">Pause</button>
-                <button class="btn btn-stop" onclick="controlBroadcaster('stop')">Stop / Complete</button>
-            </div>
-
-            <!-- Scoreboard Grid -->
-            <div class="stats-grid">
-                <div class="stat-box">
-                    <div>Total Tried</div>
-                    <div class="stat-value" id="stat-tried">0</div>
-                </div>
-                <div class="stat-box">
-                    <div>In Service (Prime)</div>
-                    <div class="stat-value" id="stat-prime" style="color: #22c55e;">0 / 50</div>
-                </div>
-                <div class="stat-box">
-                    <div>Faxes / Modems</div>
-                    <div class="stat-value" id="stat-faxes" style="color: #eab308;">0</div>
-                </div>
-                <div class="stat-box">
-                    <div>Out of Service</div>
-                    <div class="stat-value" id="stat-oos" style="color: #ef4444;">0</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Call Duration Graph Card -->
-        <div class="card">
-            <h2>Call Duration Graph (Longest to Shortest)</h2>
-            <p style="color: #94a3b8; font-size: 14px;">Visualizing active call lengths and line connectivity.</p>
-            <div class="graph-container" id="duration-graph">
-                <div style="color: #64748b; text-align: center; padding: 20px;">No call data recorded yet. Start broadcasting to populate telemetry.</div>
-            </div>
-        </div>
+<!-- AI Script & Voice Editor Card -->
+<div class="card">
+    <h2>AI Voice & Script Editor</h2>
+    <p style="color: #94a3b8; font-size: 14px;">Configure natural AI voice generation and outbound broadcaster dialogue templates.</p>
+    
+    <div style="margin-bottom: 12px;">
+        <label style="display: block; font-size: 13px; color: #cbd5e1; margin-bottom: 5px;">AI Persona / Tone</label>
+        <input type="text" id="ai-persona" value="Energetic Tree Care Specialist" style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid #334155; color: #f8fafc; border-radius: 4px;">
     </div>
 
-    <script>
-        async function fetchStatus() {
-            try {
-                const res = await fetch('/api/broadcaster/status');
-                const data = await res.json();
-                
-                document.getElementById('status-badge').innerText = data.status;
-                document.getElementById('stat-tried').innerText = data.metrics.total_tried;
-                document.getElementById('stat-prime').innerText = data.collected + ' / ' + data.target;
-                document.getElementById('stat-faxes').innerText = (data.metrics.faxes + data.metrics.modems);
-                document.getElementById('stat-oos').innerText = data.metrics.out_of_service;
+    <div style="margin-bottom: 12px;">
+        <label style="display: block; font-size: 13px; color: #cbd5e1; margin-bottom: 5px;">Voice Model</label>
+        <select id="voice-model" style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid #334155; color: #f8fafc; border-radius: 4px;">
+            <option value="en-US-Neural2-F">en-US-Neural2-F (High Energy & Natural)</option>
+            <option value="en-US-Neural2-J">en-US-Neural2-J (Professional Baritone)</option>
+            <option value="en-US-Wavenet-D">en-US-Wavenet-D (Warm Contractor Voice)</option>
+        </select>
+    </div>
 
-                // Render duration graph
-                const graphEl = document.getElementById('duration-graph');
-                if (data.duration_graph && data.duration_graph.length > 0) {
-                    let html = '';
-                    const maxDur = Math.max(...data.duration_graph.map(x => x.duration), 60);
-                    data.duration_graph.forEach(item => {
-                        let pct = Math.min(100, (item.duration / maxDur) * 100);
-                        html += `<div style="margin-bottom: 8px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8;">
-                                <span>${item.phone}</span><span>${item.duration}s</span>
-                            </div>
-                            <div class="graph-bar" style="width: ${pct}%;"></div>
-                        </div>`;
-                    });
-                    graphEl.innerHTML = html;
-                }
-            } catch (err) {
-                console.error("Failed to fetch broadcaster status", err);
+    <div style="margin-bottom: 15px;">
+        <label style="display: block; font-size: 13px; color: #cbd5e1; margin-bottom: 5px;">Broadcast Script Template (Supports {contractor_name}, {corridor})</label>
+        <textarea id="script-template" rows="4" style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid #334155; color: #f8fafc; border-radius: 4px;">Hello {contractor_name}, this is Canopy Command. We noticed your tree service crew operating in the {corridor} corridor and wanted to secure your spot for our upcoming high-density prime contractor quota.</textarea>
+    </div>
+
+    <button class="btn btn-start" onclick="saveScript()">Save & Deploy Script</button>
+    <span id="script-save-status" style="margin-left: 10px; font-size: 13px; color: #22c55e;"></span>
+</div>
+
+<script>
+    async function saveScript() {
+        const payload = {
+            persona: document.getElementById('ai-persona').value,
+            voice_model: document.getElementById('voice-model').value,
+            script_template: document.getElementById('script-template').value
+        };
+        try {
+            const res = await fetch('/api/broadcaster/script', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('script-save-status').innerText = "Script saved successfully!";
+                setTimeout(() => { document.getElementById('script-save-status').innerText = ""; }, 3000);
             }
+        } catch (err) {
+            console.error("Failed to save script", err);
         }
-
-        async function controlBroadcaster(action) {
-            try {
-                const res = await fetch('/api/broadcaster/control', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: action })
-                });
-                const data = await res.json();
-                document.getElementById('status-badge').innerText = data.status;
-                fetchStatus();
-            } catch (err) {
-                console.error("Control action failed", err);
-            }
-        }
-
-        // Poll status every 2 seconds
-        setInterval(fetchStatus, 2000);
-        fetchStatus();
-    </script>
-</body>
-</html>
+    }
+</script>
