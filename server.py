@@ -3,10 +3,17 @@ import os
 import json
 from datetime import datetime
 
+MARKET_CORRIDORS = {
+    "NC-01": {"name": "North Carolina Piedmont Corridor", "target_count": 50, "prefix": "704"},
+    "SC-02": {"name": "Upstate South Carolina Canopy", "target_count": 50, "prefix": "864"},
+    "VA-03": {"name": "Virginia Blue Ridge Foothills", "target_count": 50, "prefix": "540"},
+    "GA-04": {"name": "North Georgia Timber Belt", "target_count": 50, "prefix": "706"}
+}
+
 class BroadcasterEngine:
     def __init__(self, target_count=50):
         self.target_count = target_count
-        self.active_corridor = "Lower States High-Density Canopy Corridor"
+        self.active_corridor = "North Carolina Piedmont Corridor"
         self.status = "IDLE"
         self.queue = []
         self.prime_callbacks = []
@@ -23,6 +30,14 @@ class BroadcasterEngine:
             "out_of_service": 0,
             "call_durations": []
         }
+
+    def set_market(self, market_key):
+        if market_key in MARKET_CORRIDORS:
+            market = MARKET_CORRIDORS[market_key]
+            self.active_corridor = market["name"]
+            self.target_count = market["target_count"]
+            return True
+        return False
 
     def update_script(self, new_template, persona, voice_model):
         self.script_config["script_template"] = new_template
@@ -74,6 +89,7 @@ class BroadcasterEngine:
             "status": self.status,
             "target": self.target_count,
             "collected": len(self.prime_callbacks),
+            "active_corridor": self.active_corridor,
             "script_config": self.script_config,
             "metrics": self.metrics,
             "duration_graph": sorted_durations
@@ -103,6 +119,13 @@ def control_broadcaster():
     elif action == "stop":
         engine.status = "IDLE"
     return jsonify({"status": engine.status})
+
+@app.route("/api/broadcaster/market", methods=["POST"])
+def update_market():
+    data = request.json or {}
+    market_key = data.get("market_key")
+    success = engine.set_market(market_key)
+    return jsonify({"success": success, "active_corridor": engine.active_corridor, "target": engine.target_count})
 
 @app.route("/api/broadcaster/script", methods=["POST"])
 def update_broadcaster_script():
