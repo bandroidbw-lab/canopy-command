@@ -2,69 +2,158 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>D4 Communications Hub & Broadcaster</title>
+    <title>D4 Communications Hub & Autonomous Broadcaster</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-dark text-white p-4">
     <div class="container">
-        <h1 class="mb-4">Canopy Command — D4 Broadcaster</h1>
+        <h1 class="mb-4">Canopy Command — D4 Autonomous Autodialer Hub</h1>
 
-        <!-- Market Selector -->
-        <div class="card p-3 mb-3 bg-secondary text-white">
-            <h5>Canopy Market Corridor Selection</h5>
-            <select id="marketSelector" class="form-select bg-dark text-white mb-2" onchange="switchMarket()">
-                <option value="NC-01">North Carolina Piedmont Corridor (704)</option>
-                <option value="SC-02">Upstate South Carolina Canopy (864)</option>
-                <option value="VA-03">Virginia Blue Ridge Foothills (540)</option>
-                <option value="GA-04">North Georgia Timber Belt (706)</option>
-            </select>
+        <!-- List Management & Market Selector -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="card p-3 bg-secondary text-white">
+                    <h5>Saved List & Session Resume Manager</h5>
+                    <div class="input-group mb-2">
+                        <select id="savedListsDropdown" class="form-select bg-dark text-white">
+                            <option value="default_session">Default Session</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="loadSelectedList()">Switch / Resume List</button>
+                    </div>
+                    <small>Autodialer Cursor Position Index: <span id="currentIndexDisplay" class="text-warning fw-bold">0</span></small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card p-3 bg-secondary text-white">
+                    <h5>Canopy Market Corridor Selection</h5>
+                    <select id="marketSelector" class="form-select bg-dark text-white" onchange="switchMarket()">
+                        <option value="NC-01">North Carolina Piedmont Corridor (704)</option>
+                        <option value="SC-02">Upstate South Carolina Canopy (864)</option>
+                        <option value="VA-03">Virginia Blue Ridge Foothills (540)</option>
+                        <option value="GA-04">North Georgia Timber Belt (706)</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
-        <!-- Scoreboard -->
+        <!-- Scoreboard & Autonomous Controls -->
         <div class="row mb-4">
             <div class="col-md-4">
                 <div class="card bg-secondary text-white p-3">
-                    <h4>Status: <span id="statusText">IDLE</span></h4>
+                    <h4>Status: <span id="statusText" class="text-success">IDLE</span></h4>
                     <p>Target Quota: <span id="targetCount">50</span></p>
-                    <p>Collected: <span id="collectedCount">0</span></p>
+                    <p>Collected Primes: <span id="collectedCount">0</span></p>
                 </div>
             </div>
             <div class="col-md-8">
                 <div class="card bg-secondary text-white p-3">
-                    <h5>Control Deck</h5>
-                    <button class="btn btn-success me-2" onclick="control('start')">Start Broadcast</button>
-                    <button class="btn btn-warning me-2" onclick="control('pause')">Pause</button>
-                    <button class="btn btn-danger" onclick="control('stop')">Stop</button>
+                    <h5>Autonomous Broadcaster Control Deck</h5>
+                    <button class="btn btn-success me-2" onclick="control('start')">Start Autonomous Autodial</button>
+                    <button class="btn btn-warning me-2" onclick="control('pause')">Pause & Save Position</button>
+                    <button class="btn btn-danger" onclick="control('stop')">Stop & Reset</button>
+                    <div class="mt-2 text-info">Currently Dialing: <span id="activeCallDisplay" class="fw-bold">None</span></div>
                 </div>
             </div>
         </div>
 
-        <!-- Actual Broadcast Dialer Widget -->
-        <div class="card p-4 bg-secondary text-white mt-4">
-            <h3>Live Broadcast Dialer Console</h3>
-            <p class="text-info">Active Corridor: <span id="activeCorridorDisplay">North Carolina Piedmont Corridor</span></p>
-            <div class="mb-3">
-                <label class="form-label">Target Phone Number / Contractor</label>
-                <input type="text" id="dialerPhone" class="form-control bg-dark text-white" placeholder="Enter phone or select from queue">
+        <!-- Scrollable & Searchable Prime Callbacks List (Longest Duration First) -->
+        <div class="card p-4 bg-secondary text-white mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>Scrollable Prime Callback Lists (Sorted by Duration)</h3>
+                <input type="text" id="searchInput" class="form-control w-50 bg-dark text-white" placeholder="Search contractor name or phone..." onkeyup="filterCallbacks()">
             </div>
-            <div class="mb-3">
-                <label class="form-label">Call Result Type</label>
-                <select id="dialerResultType" class="form-select bg-dark text-white">
-                    <option value="in_service">In Service / Prime Pickup</option>
-                    <option value="fax">Fax Machine</option>
-                    <option value="modem">Modem / Tone</option>
-                    <option value="out_of_service">Out of Service</option>
-                </select>
+            <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                <table class="table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th>Contractor Name</th>
+                            <th>Phone Number</th>
+                            <th>Call Duration (Sec)</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="primeCallbacksTable">
+                        <tr><td colspan="4" class="text-center">No prime callbacks collected yet.</td></tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Call Duration (seconds)</label>
-                <input type="number" id="dialerDuration" class="form-control bg-dark text-white" value="45">
+        </div>
+
+        <!-- Manual Override Dialer -->
+        <div class="card p-4 bg-secondary text-white">
+            <h3>Manual Override & Single Callback Dispatch</h3>
+            <div class="input-group">
+                <input type="text" id="manualPhone" class="form-control bg-dark text-white" placeholder="Select from table above or enter phone number">
+                <input type="text" id="manualName" class="form-control bg-dark text-white" placeholder="Contractor Name">
+                <button class="btn btn-info text-white" onclick="dialManual()">Dial Single Callback</button>
             </div>
-            <button class="btn btn-primary" onclick="feedCallResult()">Feed Call Result to Scoreboard</button>
         </div>
     </div>
 
     <script>
+        let allCallbacks = [];
+
+        function fetchStatus() {
+            fetch('/api/broadcaster/status').then(res => res.json()).then(data => {
+                document.getElementById('statusText').innerText = data.status;
+                document.getElementById('targetCount').innerText = data.target;
+                document.getElementById('collectedCount').innerText = data.collected;
+                document.getElementById('activeCorridorDisplay').innerText = data.active_corridor;
+                document.getElementById('currentIndexDisplay').innerText = data.current_index;
+
+                if (data.active_call) {
+                    document.getElementById('activeCallDisplay').innerText = `${data.active_call.name} (${data.active_call.phone})`;
+                } else {
+                    document.getElementById('activeCallDisplay').innerText = 'None';
+                }
+
+                // Populate saved lists dropdown
+                const dropdown = document.getElementById('savedListsDropdown');
+                dropdown.innerHTML = '';
+                data.saved_lists.forEach(list => {
+                    const opt = document.createElement('option');
+                    opt.value = list;
+                    opt.text = list;
+                    if(list === data.active_list_name) opt.selected = true;
+                    dropdown.appendChild(opt);
+                });
+
+                allCallbacks = data.prime_callbacks;
+                renderCallbacks(allCallbacks);
+            });
+        }
+
+        function renderCallbacks(callbacks) {
+            const tbody = document.getElementById('primeCallbacksTable');
+            tbody.innerHTML = '';
+            if (callbacks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">No prime callbacks collected yet.</td></tr>';
+            } else {
+                callbacks.forEach(c => {
+                    const row = `<tr>
+                        <td>${c.name || 'Contractor'}</td>
+                        <td>${c.phone}</td>
+                        <td><span class="badge bg-success">${c.duration || 30}s</span></td>
+                        <td><button class="btn btn-sm btn-info text-white" onclick="populateManual('${c.phone}', '${c.name}')">Select for Callback</button></td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            }
+        }
+
+        function filterCallbacks() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allCallbacks.filter(c => 
+                c.name.toLowerCase().includes(query) || c.phone.includes(query)
+            );
+            renderCallbacks(filtered);
+        }
+
+        function populateManual(phone, name) {
+            document.getElementById('manualPhone').value = phone;
+            document.getElementById('manualName').value = name;
+        }
+
         function switchMarket() {
             const marketKey = document.getElementById('marketSelector').value;
             fetch('/api/broadcaster/market', {
@@ -72,8 +161,19 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ market_key: marketKey })
             }).then(res => res.json()).then(data => {
-                document.getElementById('activeCorridorDisplay').innerText = data.active_corridor;
-                document.getElementById('targetCount').innerText = data.target;
+                fetchStatus();
+            });
+        }
+
+        function loadSelectedList() {
+            const listName = document.getElementById('savedListsDropdown').value;
+            fetch('/api/broadcaster/load-list', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ list_name: listName })
+            }).then(res => res.json()).then(data => {
+                fetchStatus();
+                alert("Switched & resumed list: " + listName);
             });
         }
 
@@ -83,29 +183,29 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ action: action })
             }).then(res => res.json()).then(data => {
-                document.getElementById('statusText').innerText = data.status;
+                fetchStatus();
             });
         }
 
-        function feedCallResult() {
-            const phone = document.getElementById('dialerPhone').value || "704-555-0199";
-            const result_type = document.getElementById('dialerResultType').value;
-            const duration = parseInt(document.getElementById('dialerDuration').value) || 30;
-
-            fetch('/api/broadcaster/feed', {
+        function dialManual() {
+            const phone = document.getElementById('manualPhone').value;
+            const name = document.getElementById('manualName').value || "Manual Callback";
+            if (!phone) {
+                alert("Please enter a valid phone number.");
+                return;
+            }
+            fetch('/api/broadcaster/dial-manual', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    contact: { phone: phone, name: "Target Contractor" },
-                    result_type: result_type,
-                    duration: duration
-                })
+                body: JSON.stringify({ phone: phone, name: name })
             }).then(res => res.json()).then(data => {
-                document.getElementById('statusText').innerText = data.status;
-                document.getElementById('collectedCount').innerText = data.collected;
-                alert("Call result recorded successfully!");
+                fetchStatus();
+                alert("Manual callback dispatched successfully!");
             });
         }
+
+        setInterval(fetchStatus, 3000);
+        fetchStatus();
     </script>
 </body>
 </html>
