@@ -2,45 +2,121 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>D4 Commercial Canopy Dialer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D4 Communications & Broadcaster Hub</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; margin: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        .card { background: #1e293b; padding: 25px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #334155; }
+        h1, h2 { color: #38bdf8; margin-top: 0; }
+        .btn { padding: 10px 20px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; }
+        .btn-start { background: #22c55e; color: #fff; }
+        .btn-pause { background: #eab308; color: #000; }
+        .btn-stop { background: #ef4444; color: #fff; }
+        .btn:hover { opacity: 0.9; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 15px; }
+        .stat-box { background: #0f172a; padding: 15px; border-radius: 6px; text-align: center; border: 1px solid #334155; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #38bdf8; }
+        .graph-container { margin-top: 15px; max-height: 200px; overflow-y: auto; background: #0f172a; padding: 10px; border-radius: 6px; }
+        .graph-bar { background: #38bdf8; height: 12px; margin-bottom: 6px; border-radius: 3px; transition: width 0.3s; }
+    </style>
 </head>
 <body>
-    <h1>D4 Commercial Canopy Broadcast Console</h1>
-    <p>Operational interface for high-density commercial canopy cold calling.</p>
+    <div class="container">
+        <h1>D4 Communications & Broadcaster Hub</h1>
+        
+        <!-- Broadcaster Controls Card -->
+        <div class="card">
+            <h2>Broadcaster Control Center</h2>
+            <p>Status: <span id="status-badge" style="font-weight: bold; color: #38bdf8;">IDLE</span> (Target: 50 Prime Tree Contractor Contacts)</p>
+            <div>
+                <button class="btn btn-start" onclick="controlBroadcaster('start')">Start Broadcast</button>
+                <button class="btn btn-pause" onclick="controlBroadcaster('pause')">Pause</button>
+                <button class="btn btn-stop" onclick="controlBroadcaster('stop')">Stop / Complete</button>
+            </div>
+
+            <!-- Scoreboard Grid -->
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div>Total Tried</div>
+                    <div class="stat-value" id="stat-tried">0</div>
+                </div>
+                <div class="stat-box">
+                    <div>In Service (Prime)</div>
+                    <div class="stat-value" id="stat-prime" style="color: #22c55e;">0 / 50</div>
+                </div>
+                <div class="stat-box">
+                    <div>Faxes / Modems</div>
+                    <div class="stat-value" id="stat-faxes" style="color: #eab308;">0</div>
+                </div>
+                <div class="stat-box">
+                    <div>Out of Service</div>
+                    <div class="stat-value" id="stat-oos" style="color: #ef4444;">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call Duration Graph Card -->
+        <div class="card">
+            <h2>Call Duration Graph (Longest to Shortest)</h2>
+            <p style="color: #94a3b8; font-size: 14px;">Visualizing active call lengths and line connectivity.</p>
+            <div class="graph-container" id="duration-graph">
+                <div style="color: #64748b; text-align: center; padding: 20px;">No call data recorded yet. Start broadcasting to populate telemetry.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchStatus() {
+            try {
+                const res = await fetch('/api/broadcaster/status');
+                const data = await res.json();
+                
+                document.getElementById('status-badge').innerText = data.status;
+                document.getElementById('stat-tried').innerText = data.metrics.total_tried;
+                document.getElementById('stat-prime').innerText = data.collected + ' / ' + data.target;
+                document.getElementById('stat-faxes').innerText = (data.metrics.faxes + data.metrics.modems);
+                document.getElementById('stat-oos').innerText = data.metrics.out_of_service;
+
+                // Render duration graph
+                const graphEl = document.getElementById('duration-graph');
+                if (data.duration_graph && data.duration_graph.length > 0) {
+                    let html = '';
+                    const maxDur = Math.max(...data.duration_graph.map(x => x.duration), 60);
+                    data.duration_graph.forEach(item => {
+                        let pct = Math.min(100, (item.duration / maxDur) * 100);
+                        html += `<div style="margin-bottom: 8px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8;">
+                                <span>${item.phone}</span><span>${item.duration}s</span>
+                            </div>
+                            <div class="graph-bar" style="width: ${pct}%;"></div>
+                        </div>`;
+                    });
+                    graphEl.innerHTML = html;
+                }
+            } catch (err) {
+                console.error("Failed to fetch broadcaster status", err);
+            }
+        }
+
+        async function controlBroadcaster(action) {
+            try {
+                const res = await fetch('/api/broadcaster/control', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: action })
+                });
+                const data = await res.json();
+                document.getElementById('status-badge').innerText = data.status;
+                fetchStatus();
+            } catch (err) {
+                console.error("Control action failed", err);
+            }
+        }
+
+        // Poll status every 2 seconds
+        setInterval(fetchStatus, 2000);
+        fetchStatus();
+    </script>
 </body>
 </html>
-<!-- D4 Live Call Conversion & Onboarding Push Button -->
-<div style="margin-top: 20px; padding: 15px; background: #1e293b; border-radius: 8px; border: 1px solid #334155;">
-<h3 style="color: #38bdf8; margin-top: 0;">Live Call Conversion</h3>
-<button id="convertBtn" onclick="triggerOnboardingConversion()" style="background: #22c55e; color: white; padding: 12px 24px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; width: 100%;">
-    Convert Call & Populate D6 Onboarding
-</button>
-</div>
-
-<script>
-function triggerOnboardingConversion() {
-const clientData = {
-    client_name: document.getElementById('caller_name')?.value || "Active Call Prospect",
-    address: document.getElementById('caller_address')?.value || "On-Site Location",
-    zip: document.getElementById('caller_zip')?.value || "00000",
-    comp_leads: 5,
-    trial_length: 14,
-    comp_subscriptions: 1
-};
-
-fetch('https://canopy-command.onrender.com/d6/onboarding/save', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams(clientData)
-})
-.then(response => {
-    if (response.ok) {
-        alert('Success! Prospect converted and pushed to D6 Onboarding queue.');
-        window.open('https://canopy-command.onrender.com/d6/reports', '_blank');
-    } else {
-        alert('Conversion push failed. Please check connection.');
-    }
-})
-.catch(err => console.error('Error pushing conversion:', err));
-}
-</script>

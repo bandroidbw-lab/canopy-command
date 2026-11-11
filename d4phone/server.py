@@ -1,5 +1,5 @@
 from flask import Flask, render_template, jsonify, request
-from d4phone.broadcaster import BroadcasterEngine
+from broadcaster import BroadcasterEngine
 
 app = Flask(__name__)
 engine = BroadcasterEngine(target_count=50)
