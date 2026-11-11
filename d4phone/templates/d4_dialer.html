@@ -9,6 +9,23 @@
     <div class="container">
         <h1 class="mb-4">Canopy Command — D4 Autonomous Autodialer Hub</h1>
 
+        <!-- OpenPhone API & DID Configuration Card -->
+        <div class="card p-3 mb-4 bg-secondary text-white border-info">
+            <h5>OpenPhone Integration (API Key & DID Numbers)</h5>
+            <div class="row g-3 align-items-center mt-1">
+                <div class="col-md-5">
+                    <input type="password" id="opApiKey" class="form-control bg-dark text-white" placeholder="Enter OpenPhone API Key (Bearer Token)">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" id="opDidNumber" class="form-control bg-dark text-white" placeholder="Enter OpenPhone DID (e.g. +17045550199)">
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-info text-white w-100" onclick="saveOpenPhoneConfig()">Save OpenPhone Config</button>
+                </div>
+            </div>
+            <small class="text-light mt-2 d-block">Status: <span id="opConfigStatus" class="text-warning">Not Configured</span></small>
+        </div>
+
         <!-- List Management & Market Selector -->
         <div class="row mb-3">
             <div class="col-md-6">
@@ -56,7 +73,7 @@
             </div>
         </div>
 
-        <!-- Scrollable & Searchable Prime Callbacks List (Longest Duration First) -->
+        <!-- Scrollable & Searchable Prime Callbacks List with Copy Link -->
         <div class="card p-4 bg-secondary text-white mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3>Scrollable Prime Callback Lists (Sorted by Duration)</h3>
@@ -69,7 +86,7 @@
                             <th>Contractor Name</th>
                             <th>Phone Number</th>
                             <th>Call Duration (Sec)</th>
-                            <th>Action</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="primeCallbacksTable">
@@ -101,13 +118,17 @@
                 document.getElementById('activeCorridorDisplay').innerText = data.active_corridor;
                 document.getElementById('currentIndexDisplay').innerText = data.current_index;
 
+                if (data.openphone_config && data.openphone_config.did_number) {
+                    document.getElementById('opConfigStatus').innerText = `Configured (DID: ${data.openphone_config.did_number})`;
+                    document.getElementById('opConfigStatus').className = "text-success fw-bold";
+                }
+
                 if (data.active_call) {
                     document.getElementById('activeCallDisplay').innerText = `${data.active_call.name} (${data.active_call.phone})`;
                 } else {
                     document.getElementById('activeCallDisplay').innerText = 'None';
                 }
 
-                // Populate saved lists dropdown
                 const dropdown = document.getElementById('savedListsDropdown');
                 dropdown.innerHTML = '';
                 data.saved_lists.forEach(list => {
@@ -123,6 +144,19 @@
             });
         }
 
+        function saveOpenPhoneConfig() {
+            const apiKey = document.getElementById('opApiKey').value;
+            const didNumber = document.getElementById('opDidNumber').value;
+            fetch('/api/broadcaster/openphone', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ api_key: apiKey, did_number: didNumber })
+            }).then(res => res.json()).then(data => {
+                alert("OpenPhone API & DID configuration saved successfully!");
+                fetchStatus();
+            });
+        }
+
         function renderCallbacks(callbacks) {
             const tbody = document.getElementById('primeCallbacksTable');
             tbody.innerHTML = '';
@@ -133,79 +167,4 @@
                     const row = `<tr>
                         <td>${c.name || 'Contractor'}</td>
                         <td>${c.phone}</td>
-                        <td><span class="badge bg-success">${c.duration || 30}s</span></td>
-                        <td><button class="btn btn-sm btn-info text-white" onclick="populateManual('${c.phone}', '${c.name}')">Select for Callback</button></td>
-                    </tr>`;
-                    tbody.innerHTML += row;
-                });
-            }
-        }
-
-        function filterCallbacks() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = allCallbacks.filter(c => 
-                c.name.toLowerCase().includes(query) || c.phone.includes(query)
-            );
-            renderCallbacks(filtered);
-        }
-
-        function populateManual(phone, name) {
-            document.getElementById('manualPhone').value = phone;
-            document.getElementById('manualName').value = name;
-        }
-
-        function switchMarket() {
-            const marketKey = document.getElementById('marketSelector').value;
-            fetch('/api/broadcaster/market', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ market_key: marketKey })
-            }).then(res => res.json()).then(data => {
-                fetchStatus();
-            });
-        }
-
-        function loadSelectedList() {
-            const listName = document.getElementById('savedListsDropdown').value;
-            fetch('/api/broadcaster/load-list', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ list_name: listName })
-            }).then(res => res.json()).then(data => {
-                fetchStatus();
-                alert("Switched & resumed list: " + listName);
-            });
-        }
-
-        function control(action) {
-            fetch('/api/broadcaster/control', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ action: action })
-            }).then(res => res.json()).then(data => {
-                fetchStatus();
-            });
-        }
-
-        function dialManual() {
-            const phone = document.getElementById('manualPhone').value;
-            const name = document.getElementById('manualName').value || "Manual Callback";
-            if (!phone) {
-                alert("Please enter a valid phone number.");
-                return;
-            }
-            fetch('/api/broadcaster/dial-manual', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ phone: phone, name: name })
-            }).then(res => res.json()).then(data => {
-                fetchStatus();
-                alert("Manual callback dispatched successfully!");
-            });
-        }
-
-        setInterval(fetchStatus, 3000);
-        fetchStatus();
-    </script>
-</body>
-</html>
+                        <td><span
