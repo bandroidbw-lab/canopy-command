@@ -1,51 +1,111 @@
-<!-- AI Script & Voice Editor Card -->
-<div class="card">
-    <h2>AI Voice & Script Editor</h2>
-    <p style="color: #94a3b8; font-size: 14px;">Configure natural AI voice generation and outbound broadcaster dialogue templates.</p>
-    
-    <div style="margin-bottom: 12px;">
-        <label style="display: block; font-size: 13px; color: #cbd5e1; margin-bottom: 5px;">AI Persona / Tone</label>
-        <input type="text" id="ai-persona" value="Energetic Tree Care Specialist" style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid #334155; color: #f8fafc; border-radius: 4px;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>D4 Communications Hub & Broadcaster</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-dark text-white p-4">
+    <div class="container">
+        <h1 class="mb-4">Canopy Command — D4 Broadcaster</h1>
+
+        <!-- Market Selector -->
+        <div class="card p-3 mb-3 bg-secondary text-white">
+            <h5>Canopy Market Corridor Selection</h5>
+            <select id="marketSelector" class="form-select bg-dark text-white mb-2" onchange="switchMarket()">
+                <option value="NC-01">North Carolina Piedmont Corridor (704)</option>
+                <option value="SC-02">Upstate South Carolina Canopy (864)</option>
+                <option value="VA-03">Virginia Blue Ridge Foothills (540)</option>
+                <option value="GA-04">North Georgia Timber Belt (706)</option>
+            </select>
+        </div>
+
+        <!-- Scoreboard -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-secondary text-white p-3">
+                    <h4>Status: <span id="statusText">IDLE</span></h4>
+                    <p>Target Quota: <span id="targetCount">50</span></p>
+                    <p>Collected: <span id="collectedCount">0</span></p>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card bg-secondary text-white p-3">
+                    <h5>Control Deck</h5>
+                    <button class="btn btn-success me-2" onclick="control('start')">Start Broadcast</button>
+                    <button class="btn btn-warning me-2" onclick="control('pause')">Pause</button>
+                    <button class="btn btn-danger" onclick="control('stop')">Stop</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actual Broadcast Dialer Widget -->
+        <div class="card p-4 bg-secondary text-white mt-4">
+            <h3>Live Broadcast Dialer Console</h3>
+            <p class="text-info">Active Corridor: <span id="activeCorridorDisplay">North Carolina Piedmont Corridor</span></p>
+            <div class="mb-3">
+                <label class="form-label">Target Phone Number / Contractor</label>
+                <input type="text" id="dialerPhone" class="form-control bg-dark text-white" placeholder="Enter phone or select from queue">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Call Result Type</label>
+                <select id="dialerResultType" class="form-select bg-dark text-white">
+                    <option value="in_service">In Service / Prime Pickup</option>
+                    <option value="fax">Fax Machine</option>
+                    <option value="modem">Modem / Tone</option>
+                    <option value="out_of_service">Out of Service</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Call Duration (seconds)</label>
+                <input type="number" id="dialerDuration" class="form-control bg-dark text-white" value="45">
+            </div>
+            <button class="btn btn-primary" onclick="feedCallResult()">Feed Call Result to Scoreboard</button>
+        </div>
     </div>
 
-    <div style="margin-bottom: 12px;">
-        <label style="display: block; font-size: 13px; color: #cbd5e1; margin-bottom: 5px;">Voice Model</label>
-        <select id="voice-model" style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid #334155; color: #f8fafc; border-radius: 4px;">
-            <option value="en-US-Neural2-F">en-US-Neural2-F (High Energy & Natural)</option>
-            <option value="en-US-Neural2-J">en-US-Neural2-J (Professional Baritone)</option>
-            <option value="en-US-Wavenet-D">en-US-Wavenet-D (Warm Contractor Voice)</option>
-        </select>
-    </div>
-
-    <div style="margin-bottom: 15px;">
-        <label style="display: block; font-size: 13px; color: #cbd5e1; margin-bottom: 5px;">Broadcast Script Template (Supports {contractor_name}, {corridor})</label>
-        <textarea id="script-template" rows="4" style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid #334155; color: #f8fafc; border-radius: 4px;">Hello {contractor_name}, this is Canopy Command. We noticed your tree service crew operating in the {corridor} corridor and wanted to secure your spot for our upcoming high-density prime contractor quota.</textarea>
-    </div>
-
-    <button class="btn btn-start" onclick="saveScript()">Save & Deploy Script</button>
-    <span id="script-save-status" style="margin-left: 10px; font-size: 13px; color: #22c55e;"></span>
-</div>
-
-<script>
-    async function saveScript() {
-        const payload = {
-            persona: document.getElementById('ai-persona').value,
-            voice_model: document.getElementById('voice-model').value,
-            script_template: document.getElementById('script-template').value
-        };
-        try {
-            const res = await fetch('/api/broadcaster/script', {
+    <script>
+        function switchMarket() {
+            const marketKey = document.getElementById('marketSelector').value;
+            fetch('/api/broadcaster/market', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ market_key: marketKey })
+            }).then(res => res.json()).then(data => {
+                document.getElementById('activeCorridorDisplay').innerText = data.active_corridor;
+                document.getElementById('targetCount').innerText = data.target;
             });
-            const data = await res.json();
-            if (data.success) {
-                document.getElementById('script-save-status').innerText = "Script saved successfully!";
-                setTimeout(() => { document.getElementById('script-save-status').innerText = ""; }, 3000);
-            }
-        } catch (err) {
-            console.error("Failed to save script", err);
         }
-    }
-</script>
+
+        function control(action) {
+            fetch('/api/broadcaster/control', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ action: action })
+            }).then(res => res.json()).then(data => {
+                document.getElementById('statusText').innerText = data.status;
+            });
+        }
+
+        function feedCallResult() {
+            const phone = document.getElementById('dialerPhone').value || "704-555-0199";
+            const result_type = document.getElementById('dialerResultType').value;
+            const duration = parseInt(document.getElementById('dialerDuration').value) || 30;
+
+            fetch('/api/broadcaster/feed', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    contact: { phone: phone, name: "Target Contractor" },
+                    result_type: result_type,
+                    duration: duration
+                })
+            }).then(res => res.json()).then(data => {
+                document.getElementById('statusText').innerText = data.status;
+                document.getElementById('collectedCount').innerText = data.collected;
+                alert("Call result recorded successfully!");
+            });
+        }
+    </script>
+</body>
+</html>
