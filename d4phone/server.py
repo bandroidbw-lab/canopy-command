@@ -1,7 +1,10 @@
 from flask import Flask, render_template, jsonify, request
 from broadcaster import BroadcasterEngine
+import os
 
-app = Flask(__name__)
+# Explicitly set template folder relative to this file
+template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
+app = Flask(__name__, template_folder=template_dir)
 engine = BroadcasterEngine(target_count=50)
 
 @app.route("/")
