@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card-custom p-4 shadow-sm">
+<div class="card-custom p-4 shadow-sm mb-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="h4 fw-bold text-light mb-0">D6 Admin Auditing & Tenant Registry</h2>
         <span class="badge bg-warning text-dark">Master Access Active</span>
@@ -39,8 +39,28 @@
             </tbody>
         </table>
     </div>
-    <div class="mt-4">
-        <a href="/" class="btn btn-outline-secondary btn-sm">← Return to Launchpad</a>
+</div>
+
+<!-- System Demo Boards & D4 Conversion Tools Section -->
+<div class="card-custom p-4 shadow-sm mb-4">
+    <h3 class="h5 fw-bold text-warning mb-3">🚀 System Demo Boards & D4 Conversion Portals</h3>
+    <p class="text-muted small mb-3">Direct master inspection links for D2 member demos, D4 conversion report telemetry, and D3/D5 isolated workspaces.</p>
+    <div class="row g-3">
+        {% for board in demo_boards %}
+        <div class="col-md-6">
+            <div class="p-3 rounded border border-secondary bg-dark d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-light fw-bold mb-1">{{ board.name }}</h6>
+                    <span class="badge bg-secondary text-light" style="font-size: 0.7rem;">{{ board.type }}</span>
+                </div>
+                <a href="{{ board.url }}" class="btn btn-sm btn-gold" target="_blank">Launch Module →</a>
+            </div>
+        </div>
+        {% endfor %}
     </div>
+</div>
+
+<div class="mt-4">
+    <a href="/" class="btn btn-outline-secondary btn-sm">← Return to Secure Login Gate</a>
 </div>
 {% endblock %}

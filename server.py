@@ -19,17 +19,25 @@ def d2_dashboard():
     contractor_id = request.args.get('contractor_id', 'CONT-JB01')
     return render_template('d2_exclusive_portal.html', contractor_id=contractor_id)
 
+@d2_bp.route('/member-demo')
+def d2_member_demo():
+    return render_template('d2_exclusive_portal.html', contractor_id='DEMO-MEMBER')
+
 # --- D3 FIELD BOARD ---
 @d3_bp.route('/board')
 def d3_board():
     token = request.args.get('token', '')
     return render_template('d3_field_board.html', token=token)
 
-# --- D4 CONVERSION ESTIMATE HOOKS ---
+# --- D4 CONVERSION ESTIMATE HOOKS & REPORTING ---
 @d4_bp.route('/webhook', methods=['POST'])
 def d4_webhook():
     data = request.json or {}
-    return jsonify({"status": "success", "payload": data}), 200
+    return jsonify({"status": "success", "message": "D4 conversion estimate logged", "payload": data}), 200
+
+@d4_bp.route('/dashboard')
+def d4_dashboard():
+    return render_template('conversion_report.html', token="d4-master-active")
 
 # --- D5 STANDALONE DIALER ---
 @d5_bp.route('/workspace')
@@ -37,13 +45,14 @@ def d5_workspace():
     token = request.args.get('token', '')
     return render_template('d5_dialer_workspace.html', token=token)
 
-# --- D6 ADMIN AUDITING ---
+# --- D6 ADMIN AUDITING & MASTER DASHBOARD ---
 @d6_bp.route('/dashboard')
 def d6_dashboard():
     sample_tenants = [
         {
             "id": 1, 
             "name": "Apex Timberline", 
+            "contractor_id": "CONT-JB01",
             "tier": "Enterprise Pilot", 
             "status": "active", 
             "billing": "Comped"
@@ -57,7 +66,13 @@ def d6_dashboard():
             "billing": "Comped"
         }
     ]
-    return render_template('admin_dashboard.html', tenants=sample_tenants)
+    demo_boards = [
+        {"name": "D2 Member Portal Demo", "url": "/d2/member-demo", "type": "Interactive Portal"},
+        {"name": "D4 Conversion Estimator & Report", "url": "/d4/dashboard", "type": "Telemetry & PDF Hook"},
+        {"name": "D3 Field Crew Board", "url": "/d3/board?token=master-demo", "type": "Secure Field Workspace"},
+        {"name": "D5 Standalone Dialer", "url": "/d5/workspace?token=master-demo", "type": "Outreach Pilot Workspace"}
+    ]
+    return render_template('admin_dashboard.html', tenants=sample_tenants, demo_boards=demo_boards)
 
 # --- REPORTLAB HAZARD REPORT VIEW ---
 @report_bp.route('/view')
@@ -83,7 +98,6 @@ def handle_login():
     username = request.form.get('username', '').strip()
     password = request.form.get('password', '').strip()
     
-    # Read lowercase Render keys first, fallback to uppercase/defaults
     master_admin_user = os.environ.get('admin_username') or os.environ.get('ADMIN_USERNAME', 'admin')
     master_admin_pass = os.environ.get('admin_password') or os.environ.get('ADMIN_PASSWORD', 'canopy2026')
     
