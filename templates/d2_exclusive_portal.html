@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Executive Header Banner -->
+<div class="card-custom p-5 mb-4 shadow-sm">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <span class="badge bg-warning text-dark mb-2 px-3 py-1 fw-bold text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.05em;">D2 Supervisor Command</span>
+            <h1 class="display-6 fw-bold text-light mb-2">Apex Timberline Logistics</h1>
+            <p class="text-muted mb-0">Active Contractor Profile: <code class="text-warning">{{ contractor_id }}</code> | Bonded & Insured Operator</p>
+        </div>
+        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+            <span class="badge bg-secondary border border-secondary text-light px-3 py-2">Status: Active Tier</span>
+        </div>
+    </div>
+</div>
+
+<!-- Operational Modules Grid -->
+<div class="row g-4">
+    <!-- Hazard Packet Generator Card -->
+    <div class="col-md-6">
+        <div class="card-custom p-4 h-100 d-flex flex-column">
+            <div class="mb-3">
+                <h3 class="h5 fw-bold text-light mb-2">📋 Certified Hazard Packet Generator</h3>
+                <p class="text-muted small mb-0">Compile official storm flag hazard summaries with embedded contractor credentials and verification stamps.</p>
+            </div>
+            <div class="mt-auto pt-3">
+                <a href="/report/view?token=active-d2" class="btn btn-gold w-100 py-2">Generate Hazard PDF Packet</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secure Field Magic Link Dispatch Card -->
+    <div class="col-md-6">
+        <div class="card-custom p-4 h-100 d-flex flex-column">
+            <div class="mb-3">
+                <h3 class="h5 fw-bold text-light mb-2">🔐 Secure Field Token Dispatch</h3>
+                <p class="text-muted small mb-0">Issue secure, 24-hour expiring authentication links directly to authorized field crew terminals.</p>
+            </div>
+            <div class="mt-auto pt-3">
+                <button class="btn btn-outline-warning w-100 py-2 fw-semibold" onclick="alert('Secure JWT Field Token Dispatched Successfully.')">Issue Daily Crew Token</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

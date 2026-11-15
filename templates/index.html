@@ -1,55 +1,26 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="jumbotron bg-secondary p-5 rounded border border-warning shadow mb-4">
-    <h1 class="display-5 text-warning fw-bold">Canopy Command Platform</h1>
-    <p class="lead">Winter Alpha Contractor Cohort & Hazard Reporting Hub</p>
-    <hr class="my-4 border-warning">
-    <p>Unified Flask Monolith with D2, D3, D4, D5, and D6 Operational Firewalls running on Render.</p>
-</div>
-
-<h3 class="text-warning fw-bold mb-3">🚀 Quick Operational Launchpad</h3>
-<div class="row g-3">
-    <div class="col-md-4">
-        <div class="card bg-secondary border-warning h-100 p-3 shadow">
-            <h5 class="text-warning fw-bold">D2 Operator Queue</h5>
-            <p class="small text-muted">Manage contractor drop packets and daily token generation.</p>
-            <a href="/d2/?contractor_id=CONT-JB01" class="btn btn-warning fw-bold text-dark mt-auto">Open D2 Queue</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canopy Command — Enterprise Storm & Hazard Logistics</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/darkly/bootstrap.min.css">
+    <style>
+        body { background-color: #0b0f19; color: #f9fafb; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .login-card { background-color: #111827; border: 1px solid #1f2937; border-radius: 12px; }
+    </style>
+</head>
+<body class="d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+    <div class="container text-center" style="max-width: 480px;">
+        <div class="login-card p-5 shadow-lg">
+            <h1 class="h3 fw-bold mb-2"><span style="color: #f59e0b;">🌲 Canopy</span> Command</h1>
+            <p class="text-muted small mb-4">Enterprise-grade storm response and hazard logistics infrastructure.</p>
+            <hr class="border-secondary my-4 opacity-25">
+            <div class="d-grid gap-3">
+                <a href="/d2/?contractor_id=CONT-JB01" class="btn py-3 fw-bold" style="background-color: #f59e0b; color: #0b0f19;">Sign In to D2 Portal</a>
+                <a href="/health" target="_blank" class="btn btn-outline-secondary btn-sm text-muted border-0">System Telemetry</a>
+            </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card bg-secondary border-warning h-100 p-3 shadow">
-            <h5 class="text-warning fw-bold">D3 Field Board</h5>
-            <p class="small text-muted">Field execution & 1.5h spread buffer interface.</p>
-            <a href="/d3/secure-auth?token=invalid" class="btn btn-outline-warning fw-bold mt-auto">Open D3 Auth</a>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-secondary border-warning h-100 p-3 shadow">
-            <h5 class="text-warning fw-bold">D4 Outreach & Estimate</h5>
-            <p class="small text-muted">Dispatch conversion estimates and log to Gmail Sent.</p>
-            <a href="/report/view?token=invalid" class="btn btn-outline-warning fw-bold mt-auto">Open D4 Report</a>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-secondary border-warning h-100 p-3 shadow">
-            <h5 class="text-warning fw-bold">D5 Standalone Dialer</h5>
-            <p class="small text-muted">Active dialer workspace & single scan telemetry.</p>
-            <a href="/d5/secure-auth?token=invalid" class="btn btn-outline-warning fw-bold mt-auto">Open D5 Workspace</a>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-secondary border-warning h-100 p-3 shadow">
-            <h5 class="text-warning fw-bold">D6 Admin Auditing</h5>
-            <p class="small text-muted">Tenant registry, subscription tiers & billing controls.</p>
-            <a href="/d6/dashboard" class="btn btn-warning fw-bold text-dark mt-auto">Open D6 Admin</a>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-secondary border-warning h-100 p-3 shadow">
-            <h5 class="text-warning fw-bold">System Health API</h5>
-            <p class="small text-muted">Live JSON endpoint status and uptime verification.</p>
-            <a href="/health" target="_blank" class="btn btn-outline-light fw-bold mt-auto">View /health JSON</a>
-        </div>
-    </div>
-</div>
-{% endblock %}
+</body>
+</html>
