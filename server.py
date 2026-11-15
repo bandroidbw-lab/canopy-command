@@ -13,13 +13,13 @@ d5_bp = Blueprint('d5', __name__, url_prefix='/d5')
 d6_bp = Blueprint('d6', __name__, url_prefix='/d6')
 report_bp = Blueprint('report', __name__, url_prefix='/report')
 
-# --- D2 OPERATOR COMMAND CENTER (Strictly isolated for D2 Supervisors) ---
+# --- D2 OPERATOR COMMAND CENTER ---
 @d2_bp.route('/')
 def d2_dashboard():
     contractor_id = request.args.get('contractor_id', 'CONT-JB01')
     return render_template('d2_exclusive_portal.html', contractor_id=contractor_id)
 
-# --- D3 FIELD BOARD (Restricted Field Execution) ---
+# --- D3 FIELD BOARD ---
 @d3_bp.route('/board')
 def d3_board():
     token = request.args.get('token', '')
@@ -37,7 +37,7 @@ def d5_workspace():
     token = request.args.get('token', '')
     return render_template('d5_dialer_workspace.html', token=token)
 
-# --- D6 ADMIN AUDITING (Strictly Owner Only) ---
+# --- D6 ADMIN AUDITING ---
 @d6_bp.route('/dashboard')
 def d6_dashboard():
     sample_tenants = [
@@ -83,20 +83,16 @@ def handle_login():
     username = request.form.get('username', '').strip()
     password = request.form.get('password', '').strip()
     
-    # Secure Master Admin credentials pulled from environment variables (with fallback defaults)
-    master_admin_user = os.environ.get('ADMIN_USERNAME', 'admin')
-    master_admin_pass = os.environ.get('ADMIN_PASSWORD', 'canopy2026')
+    # Read lowercase Render keys first, fallback to uppercase/defaults
+    master_admin_user = os.environ.get('admin_username') or os.environ.get('ADMIN_USERNAME', 'admin')
+    master_admin_pass = os.environ.get('admin_password') or os.environ.get('ADMIN_PASSWORD', 'canopy2026')
     
-    # Master Admin / Owner Login Check
     if username == master_admin_user and password == master_admin_pass:
         return redirect('/d6/dashboard')
-    
-    # D2 Contractor Login Check (Johnny Bailey / CONT-JB01)
     elif username == 'contractor' and password == 'apex2026':
         return redirect('/d2/?contractor_id=CONT-JB01')
         
-    # Failed Authentication fallback
-    return render_template('index.html', error="Invalid credentials. Access restricted.")
+    return render_template('index.html', error=f"Invalid credentials for '{username}'. Access restricted.")
 
 @app.route('/health')
 def health_check():
