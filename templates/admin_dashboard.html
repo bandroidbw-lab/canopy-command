@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card bg-secondary border-warning p-4 shadow">
+    <h2 class="text-warning fw-bold">D6 Admin Auditing & Tenant Registry</h2>
+    <hr class="border-warning">
+    <table class="table table-dark table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tenant Name</th>
+                <th>Subscription Tier</th>
+                <th>Status</th>
+                <th>Billing</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in tenants %}
+            <tr>
+                <td>{{ t.id }}</td>
+                <td>{{ t.name }}</td>
+                <td>{{ t.tier }}</td>
+                <td><span class="badge bg-success">{{ t.status }}</span></td>
+                <td>{{ t.billing }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="/" class="btn btn-outline-light mt-3">← Back to Launchpad</a>
+</div>
+{% endblock %}

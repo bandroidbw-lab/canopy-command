@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card bg-secondary border-warning p-4 shadow">
+    <h2 class="text-warning fw-bold">D5 Standalone Dialer Workspace</h2>
+    <p class="text-muted">Unthrottled Pilot Single Scans Rate: <span class="badge bg-success">{{ rate }}</span></p>
+    <hr class="border-warning">
+    <p>Active pilot operational workspace ready for ad-hoc hazard scans.</p>
+    <a href="/" class="btn btn-outline-light mt-3">← Back to Launchpad</a>
+</div>
+{% endblock %}
