@@ -3,22 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canopy Command — Enterprise Storm & Hazard Logistics</title>
+    <title>Canopy Command — Secure Authentication</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/darkly/bootstrap.min.css">
     <style>
         body { background-color: #0b0f19; color: #f9fafb; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         .login-card { background-color: #111827; border: 1px solid #1f2937; border-radius: 12px; }
+        .form-control { background-color: #0b0f19; border-color: #374151; color: #fff; }
+        .form-control:focus { background-color: #0b0f19; border-color: #f59e0b; color: #fff; box-shadow: none; }
     </style>
 </head>
 <body class="d-flex align-items-center justify-content-center" style="min-height: 100vh;">
-    <div class="container text-center" style="max-width: 480px;">
-        <div class="login-card p-5 shadow-lg">
-            <h1 class="h3 fw-bold mb-2"><span style="color: #f59e0b;">🌲 Canopy</span> Command</h1>
-            <p class="text-muted small mb-4">Enterprise-grade storm response and hazard logistics infrastructure.</p>
-            <hr class="border-secondary my-4 opacity-25">
-            <div class="d-grid gap-3">
-                <a href="/d2/?contractor_id=CONT-JB01" class="btn py-3 fw-bold" style="background-color: #f59e0b; color: #0b0f19;">Sign In to D2 Portal</a>
-                <a href="/health" target="_blank" class="btn btn-outline-secondary btn-sm text-muted border-0">System Telemetry</a>
+    <div class="container" style="max-width: 420px;">
+        <div class="login-card p-4 p-md-5 shadow-lg">
+            <div class="text-center mb-4">
+                <h1 class="h4 fw-bold mb-1"><span style="color: #f59e0b;">🌲 Canopy</span> Command</h1>
+                <p class="text-muted small">Secure Enterprise Sign-In</p>
+            </div>
+
+            {% if error %}
+            <div class="alert alert-danger py-2 small text-center" role="alert">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form action="/login" method="POST">
+                <div class="mb-3">
+                    <label class="form-label small text-muted">Username / ID</label>
+                    <input type="text" name="username" class="form-control" placeholder="Enter username" required>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label small text-muted">Secure Password / Token</label>
+                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="py-2 fw-bold btn" style="background-color: #f59e0b; color: #0b0f19;">Authenticate & Launch</button>
+                </div>
+            </form>
+
+            <div class="text-center mt-4 pt-3 border-top border-secondary border-opacity-25">
+                <a href="/health" target="_blank" class="text-muted small text-decoration-none">System Diagnostics</a>
             </div>
         </div>
     </div>

@@ -1,30 +1,46 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card bg-secondary border-warning p-4 shadow">
-    <h2 class="text-warning fw-bold">D6 Admin Auditing & Tenant Registry</h2>
-    <hr class="border-warning">
-    <table class="table table-dark table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Tenant Name</th>
-                <th>Subscription Tier</th>
-                <th>Status</th>
-                <th>Billing</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for t in tenants %}
-            <tr>
-                <td>{{ t.id }}</td>
-                <td>{{ t.name }}</td>
-                <td>{{ t.tier }}</td>
-                <td><span class="badge bg-success">{{ t.status }}</span></td>
-                <td>{{ t.billing }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="/" class="btn btn-outline-light mt-3">← Back to Launchpad</a>
+<div class="card-custom p-4 shadow-sm">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h4 fw-bold text-light mb-0">D6 Admin Auditing & Tenant Registry</h2>
+        <span class="badge bg-warning text-dark">Master Access Active</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-dark table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Entity / Operator Name</th>
+                    <th>Assigned ID</th>
+                    <th>Subscription Tier</th>
+                    <th>Status</th>
+                    <th>Billing Mode</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in tenants %}
+                <tr>
+                    <td>{{ t.id }}</td>
+                    <td class="fw-bold text-light">{{ t.name }}</td>
+                    <td><code>{{ t.contractor_id | default('N/A') }}</code></td>
+                    <td>{{ t.tier }}</td>
+                    <td><span class="badge bg-success">{{ t.status }}</span></td>
+                    <td>{{ t.billing }}</td>
+                    <td>
+                        {% if t.contractor_id %}
+                        <a href="/d2/?contractor_id={{ t.contractor_id }}" class="btn btn-sm btn-outline-warning" target="_blank">View Portal</a>
+                        {% else %}
+                        <span class="text-muted small">System Root</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="mt-4">
+        <a href="/" class="btn btn-outline-secondary btn-sm">← Return to Launchpad</a>
+    </div>
 </div>
 {% endblock %}
