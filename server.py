@@ -5,6 +5,28 @@ from flask import Flask, render_template, jsonify, request, Blueprint, redirect,
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'canopy-command-secure-production-key')
 
+# --- IN-MEMORY TENANT REGISTRY (Mutable for D6 Admin Edits) ---
+TENANTS_DB = [
+    {
+        "id": 1, 
+        "name": "Apex Timberline", 
+        "contractor_id": "CONT-AT01",
+        "tier": "Enterprise Pilot", 
+        "status": "active", 
+        "billing": "Comped",
+        "default_pricing": "Comped Pilot Tier"
+    },
+    {
+        "id": 2, 
+        "name": "Johnny Bailey", 
+        "contractor_id": "CONT-JB01", 
+        "tier": "D2 Operator", 
+        "status": "active", 
+        "billing": "Comped",
+        "default_pricing": "$3.50 Ad-Hoc / Comped Core"
+    }
+]
+
 # --- BLUEPRINT DEFINITIONS ---
 d2_bp = Blueprint('d2', __name__, url_prefix='/d2')
 d3_bp = Blueprint('d3', __name__, url_prefix='/d3')
@@ -45,34 +67,33 @@ def d5_workspace():
     token = request.args.get('token', '')
     return render_template('d5_dialer_workspace.html', token=token)
 
-# --- D6 ADMIN AUDITING & MASTER DASHBOARD ---
+# --- D6 ADMIN AUDITING & TENANT MANAGEMENT ---
 @d6_bp.route('/dashboard')
 def d6_dashboard():
-    sample_tenants = [
-        {
-            "id": 1, 
-            "name": "Apex Timberline", 
-            "contractor_id": "CONT-JB01",
-            "tier": "Enterprise Pilot", 
-            "status": "active", 
-            "billing": "Comped"
-        },
-        {
-            "id": 2, 
-            "name": "Johnny Bailey", 
-            "contractor_id": "CONT-JB01", 
-            "tier": "D2 Operator", 
-            "status": "active", 
-            "billing": "Comped"
-        }
-    ]
     demo_boards = [
         {"name": "D2 Member Portal Demo", "url": "/d2/member-demo", "type": "Interactive Portal"},
         {"name": "D4 Conversion Estimator & Report", "url": "/d4/dashboard", "type": "Telemetry & PDF Hook"},
         {"name": "D3 Field Crew Board", "url": "/d3/board?token=master-demo", "type": "Secure Field Workspace"},
         {"name": "D5 Standalone Dialer", "url": "/d5/workspace?token=master-demo", "type": "Outreach Pilot Workspace"}
     ]
-    return render_template('admin_dashboard.html', tenants=sample_tenants, demo_boards=demo_boards)
+    return render_template('admin_dashboard.html', tenants=TENANTS_DB, demo_boards=demo_boards)
+
+@d6_bp.route('/tenant/<int:tenant_id>/edit', methods=['GET', 'POST'])
+def edit_tenant(tenant_id):
+    tenant = next((t for t in TENANTS_DB if t["id"] == tenant_id), None)
+    if not tenant:
+        return "Tenant not found", 404
+        
+    if request.method == 'POST':
+        tenant['name'] = request.form.get('name', tenant['name']).strip()
+        tenant['contractor_id'] = request.form.get('contractor_id', tenant['contractor_id']).strip()
+        tenant['tier'] = request.form.get('tier', tenant['tier']).strip()
+        tenant['status'] = request.form.get('status', tenant['status']).strip()
+        tenant['billing'] = request.form.get('billing', tenant['billing']).strip()
+        tenant['default_pricing'] = request.form.get('default_pricing', tenant['default_pricing']).strip()
+        return redirect('/d6/dashboard')
+        
+    return render_template('tenant_edit.html', tenant=tenant)
 
 # --- REPORTLAB HAZARD REPORT VIEW ---
 @report_bp.route('/view')

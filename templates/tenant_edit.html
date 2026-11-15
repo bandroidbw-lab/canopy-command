@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card-custom p-5 shadow-lg">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <span class="badge bg-warning text-dark mb-2 px-3 py-1 fw-bold text-uppercase" style="font-size: 0.75rem;">D6 Administrative Control</span>
+                    <h2 class="h4 fw-bold text-light mb-1">Edit Tenant Parameters: {{ tenant.name }}</h2>
+                    <p class="text-muted small mb-0">Modify subscription tiers, operator IDs, and default pricing configurations.</p>
+                </div>
+            </div>
+
+            <hr class="border-secondary my-4 opacity-25">
+
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label small text-muted">Entity / Operator Name</label>
+                    <input type="text" name="name" class="form-control bg-dark text-light border-secondary" value="{{ tenant.name }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small text-muted">Assigned Contractor ID</label>
+                    <input type="text" name="contractor_id" class="form-control bg-dark text-light border-secondary" value="{{ tenant.contractor_id }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small text-muted">Subscription Tier</label>
+                    <input type="text" name="tier" class="form-control bg-dark text-light border-secondary" value="{{ tenant.tier }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small text-muted">Default Pricing Model / Surcharges</label>
+                    <input type="text" name="default_pricing" class="form-control bg-dark text-light border-secondary" value="{{ tenant.default_pricing }}" required>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Account Status</label>
+                        <select name="status" class="form-select bg-dark text-light border-secondary">
+                            <option value="active" {% if tenant.status == 'active' %}selected{% endif %}>Active</option>
+                            <option value="paused" {% if tenant.status == 'paused' %}selected{% endif %}>Paused</option>
+                            <option value="suspended" {% if tenant.status == 'suspended' %}selected{% endif %}>Suspended</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Billing Mode</label>
+                        <select name="billing" class="form-select bg-dark text-light border-secondary">
+                            <option value="Comped" {% if tenant.billing == 'Comped' %}selected{% endif %}>Comped (Pilot Mode)</option>
+                            <option value="Stripe Card" {% if tenant.billing == 'Stripe Card' %}selected{% endif %}>Stored Stripe Card</option>
+                            <option value="Invoice" {% if tenant.billing == 'Invoice' %}selected{% endif %}>Monthly Invoice</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="/d6/dashboard" class="btn btn-outline-secondary px-4 py-2">Cancel</a>
+                    <button type="submit" class="btn btn-gold px-5 py-2">Save Parameters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

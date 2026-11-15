@@ -1,62 +1,67 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canopy Command — Enterprise Operations</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/darkly/bootstrap.min.css">
-    <style>
-        :root {
-            --bg-primary: #0b0f19;
-            --bg-surface: #111827;
-            --border-subtle: #1f2937;
-            --accent-gold: #f59e0b;
-            --text-main: #f9fafb;
-            --text-muted: #9ca3af;
-        }
-        body {
-            background-color: var(--bg-primary);
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            letter-spacing: -0.01em;
-        }
-        .navbar-custom {
-            background-color: var(--bg-surface) !important;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-        .card-custom {
-            background-color: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: 8px;
-            transition: border-color 0.2s ease;
-        }
-        .card-custom:hover {
-            border-color: var(--accent-gold);
-        }
-        .btn-gold {
-            background-color: var(--accent-gold);
-            color: #0b0f19;
-            font-weight: 600;
-            border: none;
-        }
-        .btn-gold:hover {
-            background-color: #d97706;
-            color: #0b0f19;
-        }
-    </style>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom px-4 py-3">
-        <a class="navbar-brand fw-bold text-light fs-5" href="/">
-            <span style="color: var(--accent-gold);">🌲 Canopy</span> Command
-        </a>
-        <div class="ms-auto text-muted small">
-            Enterprise Grid v4.2 | <span class="text-success fw-bold">● System Online</span>
-        </div>
-    </nav>
-
-    <div class="container my-5" style="max-width: 1200px;">
-        {% block content %}{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+<div class="card-custom p-4 shadow-sm mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h4 fw-bold text-light mb-0">D6 Admin Auditing & Tenant Registry</h2>
+        <span class="badge bg-warning text-dark">Master Access Active</span>
     </div>
-</body>
-</html>
+    <div class="table-responsive">
+        <table class="table table-dark table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Entity / Operator Name</th>
+                    <th>Assigned ID</th>
+                    <th>Subscription Tier</th>
+                    <th>Default Pricing Model</th>
+                    <th>Status</th>
+                    <th>Billing Mode</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in tenants %}
+                <tr>
+                    <td>{{ t.id }}</td>
+                    <td class="fw-bold text-light">{{ t.name }}</td>
+                    <td><code>{{ t.contractor_id | default('N/A') }}</code></td>
+                    <td>{{ t.tier }}</td>
+                    <td class="text-warning small">{{ t.default_pricing }}</td>
+                    <td><span class="badge bg-success">{{ t.status }}</span></td>
+                    <td>{{ t.billing }}</td>
+                    <td>
+                        <a href="/d6/tenant/{{ t.id }}/edit" class="btn btn-sm btn-gold me-1">Edit Parameters</a>
+                        {% if t.contractor_id and t.contractor_id != 'N/A' %}
+                        <a href="/d2/?contractor_id={{ t.contractor_id }}" class="btn btn-sm btn-outline-warning" target="_blank">View Portal</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- System Demo Boards & D4 Conversion Tools Section -->
+<div class="card-custom p-4 shadow-sm mb-4">
+    <h3 class="h5 fw-bold text-warning mb-3">🚀 System Demo Boards & D4 Conversion Portals</h3>
+    <p class="text-muted small mb-3">Direct master inspection links for D2 member demos, D4 conversion report telemetry, and D3/D5 isolated workspaces.</p>
+    <div class="row g-3">
+        {% for board in demo_boards %}
+        <div class="col-md-6">
+            <div class="p-3 rounded border border-secondary bg-dark d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-light fw-bold mb-1">{{ board.name }}</h6>
+                    <span class="badge bg-secondary text-light" style="font-size: 0.7rem;">{{ board.type }}</span>
+                </div>
+                <a href="{{ board.url }}" class="btn btn-sm btn-gold" target="_blank">Launch Module →</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="/" class="btn btn-outline-secondary btn-sm">← Return to Secure Login Gate</a>
+</div>
+{% endblock %}
