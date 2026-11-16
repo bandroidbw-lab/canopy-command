@@ -13,9 +13,10 @@
                     <th>Entity / Operator Name</th>
                     <th>Assigned ID</th>
                     <th>Subscription Tier</th>
+                    <th>Default Pricing Model</th>
                     <th>Status</th>
                     <th>Billing Mode</th>
-                    <th>Action</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -25,13 +26,13 @@
                     <td class="fw-bold text-light">{{ t.name }}</td>
                     <td><code>{{ t.contractor_id | default('N/A') }}</code></td>
                     <td>{{ t.tier }}</td>
+                    <td class="text-warning small">{{ t.default_pricing }}</td>
                     <td><span class="badge bg-success">{{ t.status }}</span></td>
                     <td>{{ t.billing }}</td>
                     <td>
-                        {% if t.contractor_id %}
-                        <a href="/d2/?contractor_id={{ t.contractor_id }}" class="btn btn-sm btn-outline-warning" target="_blank">View Portal</a>
-                        {% else %}
-                        <span class="text-muted small">System Root</span>
+                        <a href="/d6/tenant/{{ t.id }}/edit" class="btn btn-sm btn-gold me-1 mb-1">Edit Parameters</a>
+                        {% if t.contractor_id and t.contractor_id != 'N/A' %}
+                        <a href="/d2/?contractor_id={{ t.contractor_id }}" class="btn btn-sm btn-outline-warning mb-1" target="_blank">View Portal</a>
                         {% endif %}
                     </td>
                 </tr>
