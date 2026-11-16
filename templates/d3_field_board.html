@@ -3,9 +3,11 @@
 <div class="card-custom p-5 shadow-sm">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <span class="badge bg-warning text-dark mb-2 fw-bold px-3 py-1 text-uppercase" style="font-size: 0.75rem;">D3 Field Crew Terminal</span>
+            <span class="badge {% if mode == 'demo' %}bg-info text-dark{% else %}bg-warning text-dark{% endif %} mb-2 fw-bold px-3 py-1 text-uppercase" style="font-size: 0.75rem;">
+                D3 Field Crew Terminal — Mode: {{ mode | upper }}
+            </span>
             <h1 class="h3 fw-bold text-light mb-1">Single-Lead Execution Board</h1>
-            <p class="text-muted small mb-0">Secure Token: <code class="text-warning">{{ token }}</code> | Status: 24-Hour Active Session</p>
+            <p class="text-muted small mb-0">Secure Token: <code class="text-warning">{{ token }}</code></p>
         </div>
         <span class="badge bg-success px-3 py-2">Securely Firewalled</span>
     </div>
@@ -14,7 +16,17 @@
 
     <div class="p-4 rounded border border-secondary bg-dark mb-4">
         <h5 class="text-light fw-bold mb-2">📍 Current Lead: Property Hazard Inspection #4265</h5>
+        
+        {% if mode == 'demo' %}
+        <!-- Demo Mode: Blurred details and preview notice -->
+        <div class="alert alert-info py-2 small mb-3">
+            🔍 <strong>Demo Preview Mode:</strong> Specific owner identities and exact coordinates are masked. House-front imagery and hazard parameters are fully operational.
+        </div>
+        <p class="text-muted small mb-3">Costilla County Parcel <span class="blur-text" style="filter: blur(4px); user-select: none;">70226200</span> | Blanca, Colorado</p>
+        {% else %}
         <p class="text-muted small mb-3">Costilla County Parcel 70226200 | Blanca, Colorado</p>
+        {% endif %}
+
         <div class="row g-3">
             <div class="col-md-4">
                 <span class="text-muted d-block small">Status</span>
@@ -32,7 +44,7 @@
     </div>
 
     <div class="d-flex gap-3">
-        <button class="btn btn-gold px-4 py-2" onclick="alert('Lead disposition logged successfully.')">Record Disposition</button>
+        <button class="btn btn-gold px-4 py-2" onclick="alert('Lead disposition logged and recycled back to harvester pool.')">Record Disposition & Recycle Lead</button>
         <a href="/d6/dashboard" class="btn btn-outline-secondary px-4 py-2">← Back to Dashboard</a>
     </div>
 </div>
