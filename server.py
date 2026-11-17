@@ -56,17 +56,47 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    error_msg = ""
     if request.method == 'POST':
         password = request.form.get('password', '')
-        if password == os.environ.get('ADMIN_PASSWORD', 'canopy2026'):
+        # Accept default 'canopy2026' or environment variable password
+        admin_pass = os.environ.get('ADMIN_PASSWORD', 'canopy2026')
+        if password == admin_pass:
             session['logged_in'] = True
             return redirect(url_for('d6_dashboard'))
-    return '''
-        <h2>Canopy Command Sign-In</h2>
-        <form method="post">
-            <input type="password" name="password" placeholder="Admin Password" required>
-            <button type="submit">Sign In</button>
-        </form>
+        else:
+            error_msg = "<div class='alert alert-danger mt-3 py-2 small'>Incorrect password. Default is canopy2026</div>"
+
+    return f'''
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Sign In | Canopy Command D6</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {{ background-color: #121212; color: #e0e0e0; font-family: system-ui, -apple-system, sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; }}
+            .card {{ background-color: #1e1e1e; border: 1px solid #333; width: 100%; max-width: 400px; }}
+        </style>
+    </head>
+    <body>
+        <div class="card p-4 shadow-lg">
+            <div class="text-center mb-4">
+                <h3 class="text-warning">🌲 Canopy Command</h3>
+                <p class="small text-muted mb-0">D6 Master Switchboard Portal</p>
+            </div>
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label small text-muted">Admin Password</label>
+                    <input type="password" name="password" class="form-control bg-black text-light border-secondary" placeholder="Enter password" required autofocus>
+                </div>
+                <button type="submit" class="btn btn-warning w-100 fw-bold">Sign In to Dashboard</button>
+                {error_msg}
+            </form>
+        </div>
+    </body>
+    </html>
     '''
 
 @app.route('/logout')
@@ -84,7 +114,6 @@ def d6_dashboard():
 @app.route('/d6/tenants')
 @login_required
 def d6_tenants():
-    """Renders the Tenant & D2 Control Center with singular focused vitals, callback dial count, and weather telemetry."""
     selected_id = request.args.get('contractor_id', CONTRACTORS_DIRECTORY[0]['id'])
     active_contractor = next((c for c in CONTRACTORS_DIRECTORY if c['id'] == selected_id), CONTRACTORS_DIRECTORY[0])
     
@@ -107,7 +136,6 @@ def d6_tenants():
 @app.route('/d6/tenants/update-accounting', methods=['POST'])
 @login_required
 def update_tenant_accounting():
-    """Handles up-front balance top-ups, minimum balance enforcement, and lead comping."""
     data = request.get_json() or {}
     contractor_id = data.get('contractor_id')
     top_up_amount = float(data.get('top_up_amount', 0.0))
@@ -120,7 +148,7 @@ def update_tenant_accounting():
         
     contractor['balance'] += top_up_amount
     if comp_lead:
-        contractor['balance'] += 5.00  # Comped lead credit
+        contractor['balance'] += 5.00
         
     return jsonify({
         "status": "success",
@@ -131,7 +159,6 @@ def update_tenant_accounting():
 @app.route('/d6/tenants/calculate-pricing', methods=['POST'])
 @login_required
 def calculate_pricing():
-    """Calculates territory pricing based on hazard density and returns a mock Stripe checkout link."""
     data = request.get_json() or {}
     roof = float(data.get('roof_hazards', 0))
     drive = float(data.get('driveway_hazards', 0))
