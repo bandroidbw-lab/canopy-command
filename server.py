@@ -58,14 +58,18 @@ def index():
 def login():
     error_msg = ""
     if request.method == 'POST':
-        password = request.form.get('password', '')
-        # Accept default 'canopy2026' or environment variable password
-        admin_pass = os.environ.get('ADMIN_PASSWORD', 'canopy2026')
-        if password == admin_pass:
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+        
+        # Define authorized admin credentials
+        VALID_USER = "admin"
+        VALID_PASS = os.environ.get('ADMIN_PASSWORD', 'canopy2026')
+        
+        if username == VALID_USER and password == VALID_PASS:
             session['logged_in'] = True
             return redirect(url_for('d6_dashboard'))
         else:
-            error_msg = "<div class='alert alert-danger mt-3 py-2 small'>Incorrect password. Default is canopy2026</div>"
+            error_msg = "<div class='alert alert-danger mt-3 py-2 small'>Invalid username or password.</div>"
 
     return f'''
     <!DOCTYPE html>
@@ -88,8 +92,12 @@ def login():
             </div>
             <form method="POST">
                 <div class="mb-3">
-                    <label class="form-label small text-muted">Admin Password</label>
-                    <input type="password" name="password" class="form-control bg-black text-light border-secondary" placeholder="Enter password" required autofocus>
+                    <label class="form-label small text-muted">Username</label>
+                    <input type="text" name="username" class="form-control bg-black text-light border-secondary" placeholder="Enter username" required autofocus>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small text-muted">Password</label>
+                    <input type="password" name="password" class="form-control bg-black text-light border-secondary" placeholder="Enter password" required>
                 </div>
                 <button type="submit" class="btn btn-warning w-100 fw-bold">Sign In to Dashboard</button>
                 {error_msg}
