@@ -61,15 +61,15 @@ def login():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
         
-        # Define authorized admin credentials
-        VALID_USER = "admin"
-        VALID_PASS = os.environ.get('ADMIN_PASSWORD', 'canopy2026')
+        # Authenticate against Render environment variables
+        expected_user = os.environ.get('ADMIN_USERNAME', 'admin')
+        expected_pass = os.environ.get('ADMIN_PASSWORD', 'canopy2026')
         
-        if username == VALID_USER and password == VALID_PASS:
+        if username == expected_user and password == expected_pass:
             session['logged_in'] = True
             return redirect(url_for('d6_dashboard'))
         else:
-            error_msg = "<div class='alert alert-danger mt-3 py-2 small'>Invalid username or password.</div>"
+            error_msg = "<div class='alert alert-danger mt-3 py-2 small'>Invalid username or password. Check your Render environment variables.</div>"
 
     return f'''
     <!DOCTYPE html>
