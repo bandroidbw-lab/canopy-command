@@ -48,6 +48,12 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# --- ROOT & AUTHENTICATION ROUTES ---
+@app.route('/')
+def index():
+    """Redirects base domain root directly to the D6 switchboard dashboard."""
+    return redirect(url_for('d6_dashboard'))
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
