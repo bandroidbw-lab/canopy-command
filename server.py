@@ -77,10 +77,7 @@ USAGE_AUDIT_LOGS = [
     {"timestamp": "2026-11-17 07:31:02", "contractor_id": "CONT-AT01", "action": "D5_HAZARD_SCAN", "details": "Ad-hoc technical screening executed ($3.50 unit)."}
 ]
 
-LEDGER_TRANSACTIONS = [
-    {"tx_id": "TX-9001", "tenant_id": "CONT-JB01", "timestamp": "2026-11-17 08:30:00", "type": "RELOAD", "amount": 200.00, "desc": "Initial Monthly Pre-Funded White-Glove Retainer"}
-]
-
+# Live Scoreboard Telemetry driven dynamically from logs
 DAILY_TELEMETRY = {
     "calls_today": 42,
     "press_ones": 7,
@@ -89,7 +86,6 @@ DAILY_TELEMETRY = {
 }
 
 
-# --- AUTHENTICATION DECORATOR ---
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -99,7 +95,6 @@ def login_required(f):
     return decorated_function
 
 
-# --- CORE & AUTH ROUTES ---
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -108,20 +103,11 @@ def index():
 def handle_login():
     username = request.form.get('username', '').strip()
     password = request.form.get('password', '').strip()
-    
-    master_admin_user = os.environ.get('admin_username', 'admin')
-    master_admin_pass = os.environ.get('admin_password', 'canopy2026')
-    
-    if username == master_admin_user and password == master_admin_pass:
+    if username == os.environ.get('admin_username', 'admin') and password == os.environ.get('admin_password', 'canopy2026'):
         session['logged_in'] = True
         session['is_admin'] = True
         return redirect('/d6/dashboard')
-    elif username == 'contractor' and password == 'apex2026':
-        session['logged_in'] = True
-        session['is_admin'] = False
-        return redirect('/d2/?contractor_id=CONT-JB01')
-        
-    return render_template('index.html', error="Invalid credentials. Access restricted.")
+    return render_template('index.html', error="Invalid credentials.")
 
 @app.route('/logout')
 def logout():
@@ -129,31 +115,8 @@ def logout():
     return redirect(url_for('index'))
 
 
-# --- D2 OPERATOR & PROGRESSION PORTAL ---
-@app.route('/d2/')
-@login_required
-def d2_dashboard():
-    contractor_id = request.args.get('contractor_id', 'CONT-JB01')
-    mode = request.args.get('mode', 'standard')
-    contractor = next((c for c in CONTRACTORS_DIRECTORY if c['id'] == contractor_id), CONTRACTORS_DIRECTORY[0])
-    return render_template('d2_portal.html', contractor=contractor, demo_mode=(mode == 'demo'))
+# --- THE 6 ADMIN BLUEPRINT PAGES ---
 
-
-# --- D3 FIELD CANVASSING BOARD ---
-@app.route('/d3/board')
-@login_required
-def d3_board():
-    return render_template('d3_board.html')
-
-
-# --- D5 TECHNICAL STORM HAZARD SCREENING WORKSPACE ---
-@app.route('/d5/workspace')
-@login_required
-def d5_workspace():
-    return render_template('d5_workspace.html')
-
-
-# --- D6 MASTER SWITCHBOARD & CUSTOMER SERVICE ROUTES ---
 @app.route('/d6/dashboard')
 @login_required
 def d6_dashboard():
@@ -168,141 +131,72 @@ def d6_dashboard():
                            telemetry=DAILY_TELEMETRY,
                            directory=CONTRACTORS_DIRECTORY)
 
+@app.route('/d6/tenants')
+@login_required
+def d6_tenants():
+    selected_id = request.args.get('contractor_id', CONTRACTORS_DIRECTORY[0]['id'])
+    active_contractor = next((c for c in CONTRACTORS_DIRECTORY if c['id'] == selected_id), CONTRACTORS_DIRECTORY[0])
+    tenant_logs = [log for log in USAGE_AUDIT_LOGS if log['contractor_id'] == active_contractor['id']]
+    return render_template('admin_tenants.html', directory=CONTRACTORS_DIRECTORY, active_contractor=active_contractor, tenant_logs=tenant_logs)
+
+@app.route('/d6/phonebook')
+@login_required
+def d6_phonebook():
+    return render_template('admin_phonebook.html', directory=CONTRACTORS_DIRECTORY)
+
+@app.route('/d6/broadcaster')
+@login_required
+def d6_broadcaster():
+    return render_template('admin_broadcaster.html')
+
+@app.route('/d6/pricing')
+@login_required
+def d6_pricing():
+    return render_template('admin_pricing.html')
+
+@app.route('/d6/reports')
+@login_required
+def d6_reports():
+    return render_template('admin_reports.html', logs=USAGE_AUDIT_LOGS, telemetry=DAILY_TELEMETRY)
+
+
+# --- API ENDPOINTS ---
+
 @app.route('/d6/global-search', methods=['GET'])
 @login_required
 def global_search():
     query = request.args.get('q', '').strip().lower()
     if not query:
         return jsonify({"status": "success", "results": []})
-    
-    matches = []
-    for c in CONTRACTORS_DIRECTORY:
-        if query in c['name'].lower() or query in c['id'].lower() or query in c['region'].lower() or query in c['phone']:
-            c_logs = [log for log in USAGE_AUDIT_LOGS if log['contractor_id'] == c['id']]
-            matches.append({
-                **c,
-                "recent_activity": c_logs[-5:] if c_logs else [{"timestamp": "N/A", "action": "No recent telemetry", "details": ""}]
-            })
-            
+    matches = [c for c in CONTRACTORS_DIRECTORY if query in c['name'].lower() or query in c['id'].lower() or query in c['region'].lower() or query in c['phone']]
     return jsonify({"status": "success", "results": matches})
-
-@app.route('/d6/doctor-screen', methods=['POST'])
-@login_required
-def doctor_screen():
-    data = request.get_json() or {}
-    contractor_id = data.get('contractor_id')
-    new_status = data.get('status')
-    new_tier = data.get('tier')
-    new_balance = data.get('balance')
-    
-    contractor = next((c for c in CONTRACTORS_DIRECTORY if c['id'] == contractor_id), None)
-    if not contractor:
-        return jsonify({"status": "error", "message": "Contractor record not found."}), 404
-        
-    if new_status:
-        contractor['status'] = new_status
-    if new_tier:
-        contractor['tier'] = new_tier
-    if new_balance is not None:
-        contractor['balance'] = float(new_balance)
-        
-    return jsonify({
-        "status": "success", 
-        "message": f"Successfully doctored record for {contractor['name']}.",
-        "updated_record": contractor
-    })
 
 @app.route('/d6/convert-pilot', methods=['POST'])
 @login_required
 def convert_pilot():
     data = request.get_json() or {}
     contractor_id = data.get('contractor_id')
-    waive_retainer = data.get('waive_retainer', True)
-    
     contractor = next((c for c in CONTRACTORS_DIRECTORY if c['id'] == contractor_id), None)
     if not contractor:
         return jsonify({"status": "error", "message": "Contractor not found."}), 404
-        
-    if waive_retainer:
-        contractor['tier'] = "Self-Managed ($5.00 Unit - Retainer Waived)"
-        contractor['status'] = "Paid Enterprise (Self-Run)"
-        DAILY_TELEMETRY['converted_pilots'] += 1
-    else:
-        contractor['tier'] = "White-Glove ($299/mo)"
-        contractor['status'] = "Paid Enterprise (Concierge)"
-        
-    return jsonify({
-        "status": "success",
-        "message": f"Successfully converted {contractor['name']}! Retainer waived, $5.00 unit baseline active.",
-        "updated_contractor": contractor
-    })
+    contractor['tier'] = "Self-Managed ($5.00 Unit - Retainer Waived)"
+    contractor['status'] = "Paid Enterprise (Self-Run)"
+    DAILY_TELEMETRY['converted_pilots'] += 1
+    USAGE_AUDIT_LOGS.append({"timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "contractor_id": contractor_id, "action": "PILOT_CONVERTED", "details": "Retainer waived, $5.00 baseline active."})
+    return jsonify({"status": "success", "message": f"Successfully converted {contractor['name']}!", "updated_contractor": contractor})
 
-@app.route('/d6/save-card-token', methods=['POST'])
+@app.route('/d6/doctor-screen', methods=['POST'])
 @login_required
-def save_card_token():
+def doctor_screen():
     data = request.get_json() or {}
     contractor_id = data.get('contractor_id')
-    payment_method_id = data.get('payment_method_id', '').strip()
-    
     contractor = next((c for c in CONTRACTORS_DIRECTORY if c['id'] == contractor_id), None)
     if not contractor:
-        return jsonify({"status": "error", "message": "Contractor record not found."}), 404
-        
-    contractor['stripe_payment_method_id'] = payment_method_id
-    contractor['status'] = "Paid Enterprise"
-    
-    return jsonify({
-        "status": "success",
-        "message": f"Successfully vaulted card-on-file ({payment_method_id}) for {contractor['name']}.",
-        "updated_contractor": contractor
-    })
-
-@app.route('/d6/calculate-zip-pricing', methods=['POST'])
-@login_required
-def calculate_zip_pricing():
-    data = request.get_json() or {}
-    zip_code = data.get('zip_code', '').strip()
-    projected_leads = int(data.get('projected_leads', 15))
-    roof_hazards = int(data.get('roof_hazards', 3))
-    driveway_hazards = int(data.get('driveway_hazards', 2))
-    
-    base_price = 50.00
-    lead_component = projected_leads * 2.50
-    hazard_component = (roof_hazards + driveway_hazards) * 5.00
-    total_price = max(50.00, base_price + lead_component + hazard_component)
-    
-    return jsonify({
-        "status": "success",
-        "zip_code": zip_code,
-        "projected_leads": projected_leads,
-        "calculated_price": round(total_price, 2)
-    })
-
-@app.route('/d6/create-stripe-checkout', methods=['POST'])
-@login_required
-def create_stripe_checkout():
-    data = request.get_json() or {}
-    zip_code = data.get('zip_code')
-    amount = float(data.get('amount', 50.00))
-    checkout_url = f"https://checkout.stripe.com/pay/cs_live_sample_zip_{zip_code}"
-    return jsonify({
-        "status": "success",
-        "checkout_url": checkout_url,
-        "amount": amount,
-        "zip_code": zip_code
-    })
-
-@app.route('/d6/send-demo-link', methods=['POST'])
-@login_required
-def send_demo_link():
-    data = request.get_json() or {}
-    phone = data.get('phone', '').strip()
-    board_name = data.get('board_name', 'Demo Board')
-    
-    return jsonify({
-        "status": "success", 
-        "message": f"Demo link for {board_name} successfully texted to {phone}."
-    })
+        return jsonify({"status": "error", "message": "Not found."}), 404
+    contractor['status'] = data.get('status', contractor['status'])
+    contractor['tier'] = data.get('tier', contractor['tier'])
+    contractor['balance'] = float(data.get('balance', contractor['balance']))
+    return jsonify({"status": "success", "message": "Override saved."})
 
 
 if __name__ == '__main__':
