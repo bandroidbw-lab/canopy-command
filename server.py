@@ -61,15 +61,15 @@ def login():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
         
-        # Authenticate against Render environment variables
-        expected_user = os.environ.get('ADMIN_USERNAME', 'admin')
-        expected_pass = os.environ.get('ADMIN_PASSWORD', 'canopy2026')
+        # Use Render environment variables if available, otherwise fallback to admin / canopy2026
+        expected_user = os.environ.get('ADMIN_USERNAME') or 'admin'
+        expected_pass = os.environ.get('ADMIN_PASSWORD') or 'canopy2026'
         
         if username == expected_user and password == expected_pass:
             session['logged_in'] = True
             return redirect(url_for('d6_dashboard'))
         else:
-            error_msg = "<div class='alert alert-danger mt-3 py-2 small'>Invalid username or password. Check your Render environment variables.</div>"
+            error_msg = f"<div class='alert alert-danger mt-3 py-2 small'>Invalid username or password. (Trying user: {expected_user})</div>"
 
     return f'''
     <!DOCTYPE html>
