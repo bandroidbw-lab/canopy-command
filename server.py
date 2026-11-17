@@ -72,14 +72,21 @@ CONTRACTORS_DIRECTORY = [
 ]
 
 USAGE_AUDIT_LOGS = [
-    {"timestamp": "2026-11-16 14:30:12", "contractor_id": "CONT-JB01", "action": "D3_DOOR_DROP_SAVED", "details": "Parcel 70226200 disposition updated."},
-    {"timestamp": "2026-11-16 14:30:15", "contractor_id": "CONT-JB01", "action": "D2_PROGRESSION_VIEW", "details": "Loaded printable report view."},
-    {"timestamp": "2026-11-16 14:31:02", "contractor_id": "CONT-AT01", "action": "D5_HAZARD_SCAN", "details": "Ad-hoc technical screening executed ($3.50 unit)."}
+    {"timestamp": "2026-11-17 07:30:12", "contractor_id": "CONT-JB01", "action": "D3_DOOR_DROP_SAVED", "details": "Parcel 70226200 disposition updated."},
+    {"timestamp": "2026-11-17 07:30:15", "contractor_id": "CONT-JB01", "action": "D2_PROGRESSION_VIEW", "details": "Loaded printable report view."},
+    {"timestamp": "2026-11-17 07:31:02", "contractor_id": "CONT-AT01", "action": "D5_HAZARD_SCAN", "details": "Ad-hoc technical screening executed ($3.50 unit)."}
 ]
 
 LEDGER_TRANSACTIONS = [
-    {"tx_id": "TX-9001", "tenant_id": "CONT-JB01", "timestamp": "2026-11-16 08:30:00", "type": "RELOAD", "amount": 200.00, "desc": "Initial Monthly Pre-Funded White-Glove Retainer"}
+    {"tx_id": "TX-9001", "tenant_id": "CONT-JB01", "timestamp": "2026-11-17 08:30:00", "type": "RELOAD", "amount": 200.00, "desc": "Initial Monthly Pre-Funded White-Glove Retainer"}
 ]
+
+DAILY_TELEMETRY = {
+    "calls_today": 42,
+    "press_ones": 7,
+    "converted_pilots": 3,
+    "retainer_revenue": 897.00
+}
 
 
 # --- AUTHENTICATION DECORATOR ---
@@ -157,7 +164,9 @@ def d6_dashboard():
     return render_template('admin_dashboard.html', 
                            white_glove=white_glove_queue,
                            pilots=pilot_queue,
-                           callbacks=callback_queue)
+                           callbacks=callback_queue,
+                           telemetry=DAILY_TELEMETRY,
+                           directory=CONTRACTORS_DIRECTORY)
 
 @app.route('/d6/global-search', methods=['GET'])
 @login_required
@@ -183,6 +192,7 @@ def doctor_screen():
     data = request.get_json() or {}
     contractor_id = data.get('contractor_id')
     new_status = data.get('status')
+    new_tier = data.get('tier')
     new_balance = data.get('balance')
     
     contractor = next((c for c in CONTRACTORS_DIRECTORY if c['id'] == contractor_id), None)
@@ -191,6 +201,8 @@ def doctor_screen():
         
     if new_status:
         contractor['status'] = new_status
+    if new_tier:
+        contractor['tier'] = new_tier
     if new_balance is not None:
         contractor['balance'] = float(new_balance)
         
@@ -198,6 +210,31 @@ def doctor_screen():
         "status": "success", 
         "message": f"Successfully doctored record for {contractor['name']}.",
         "updated_record": contractor
+    })
+
+@app.route('/d6/convert-pilot', methods=['POST'])
+@login_required
+def convert_pilot():
+    data = request.get_json() or {}
+    contractor_id = data.get('contractor_id')
+    waive_retainer = data.get('waive_retainer', True)
+    
+    contractor = next((c for c in CONTRACTORS_DIRECTORY if c['id'] == contractor_id), None)
+    if not contractor:
+        return jsonify({"status": "error", "message": "Contractor not found."}), 404
+        
+    if waive_retainer:
+        contractor['tier'] = "Self-Managed ($5.00 Unit - Retainer Waived)"
+        contractor['status'] = "Paid Enterprise (Self-Run)"
+        DAILY_TELEMETRY['converted_pilots'] += 1
+    else:
+        contractor['tier'] = "White-Glove ($299/mo)"
+        contractor['status'] = "Paid Enterprise (Concierge)"
+        
+    return jsonify({
+        "status": "success",
+        "message": f"Successfully converted {contractor['name']}! Retainer waived, $5.00 unit baseline active.",
+        "updated_contractor": contractor
     })
 
 @app.route('/d6/save-card-token', methods=['POST'])
@@ -261,7 +298,6 @@ def send_demo_link():
     data = request.get_json() or {}
     phone = data.get('phone', '').strip()
     board_name = data.get('board_name', 'Demo Board')
-    board_url = data.get('url', '')
     
     return jsonify({
         "status": "success", 

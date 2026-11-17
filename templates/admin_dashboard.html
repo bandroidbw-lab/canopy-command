@@ -1,137 +1,356 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <span class="badge bg-warning text-dark mb-1 fw-bold px-3 py-1 text-uppercase" style="font-size: 0.75rem;">D6 Master Command Switchboard</span>
-            <h1 class="h3 fw-bold text-light mb-0">Live Auto-Dialer & Active Lead Workspace</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D6 Master Switchboard | Canopy Command</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: system-ui, -apple-system, sans-serif; }
+        .card { background-color: #1e1e1e; border: 1px solid #333; }
+        .table-dark { background-color: #1a1a1a; }
+        .dropdown-menu { background-color: #1e1e1e; border-color: #333; }
+        .dropdown-item { color: #e0e0e0; }
+        .dropdown-item:hover { background-color: #333; color: #fff; }
+    </style>
+</head>
+<body>
+
+    <!-- Top-Anchored Global Command Header -->
+    <div class="container-fluid bg-dark border-bottom border-secondary py-3 mb-4 shadow">
+        <div class="row align-items-center mb-3">
+            <!-- Cross-Page Navigation -->
+            <div class="col-md-6">
+                <div class="btn-group" role="group" aria-label="Admin Page Navigation">
+                    <a href="/d6/dashboard" class="btn btn-sm btn-primary active">1. Switchboard</a>
+                    <a href="/d6/tenants" class="btn btn-sm btn-outline-light">2. Tenants</a>
+                    <a href="/d6/phonebook" class="btn btn-sm btn-outline-light">3. Phonebook</a>
+                    <a href="/d6/broadcaster" class="btn btn-sm btn-outline-light">4. Broadcaster</a>
+                    <a href="/d6/pricing" class="btn btn-sm btn-outline-light">5. Pricing</a>
+                    <a href="/d6/reports" class="btn btn-sm btn-outline-light">6. Reports</a>
+                </div>
+            </div>
+            
+            <!-- Live Scoreboard Ticker Banner -->
+            <div class="col-md-6 text-end">
+                <span class="badge bg-secondary me-2">Calls Today: <strong class="text-warning" id="sbCallsToday">{{ telemetry.calls_today }}</strong></span>
+                <span class="badge bg-secondary me-2">Press-1: <strong class="text-success" id="sbPressOnes">{{ telemetry.press_ones }}</strong></span>
+                <span class="badge bg-secondary me-2">Pilots Converted: <strong class="text-info" id="sbConverted">{{ telemetry.converted_pilots }}</strong></span>
+                <span class="badge bg-secondary">Retainer Rev: <strong class="text-light" id="sbRevenue">${{ telemetry.retainer_revenue }}</strong></span>
+            </div>
         </div>
-        <div class="d-flex gap-2 align-items-center">
-            <span id="dialerStatusBadge" class="badge bg-secondary px-3 py-2">Auto-Dialer: IDLE</span>
-            <button id="toggleDialerBtn" class="btn btn-outline-warning btn-sm fw-bold" onclick="toggleAutoDialer()">Start Auto-Dialer</button>
+
+        <!-- Autocomplete Global Search Bar -->
+        <div class="row position-relative">
+            <div class="col-12">
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text bg-secondary text-light border-secondary">🔍 Global D2 Search</span>
+                    <input type="text" id="globalSearchInput" class="form-control bg-black text-light border-secondary" placeholder="Type contractor name, ID, region, or phone to select from matches..." autocomplete="off">
+                </div>
+                
+                <!-- Autocomplete Dropdown Results Box -->
+                <div id="searchResultsDropdown" class="list-group position-absolute w-100 shadow-lg" style="z-index: 1050; display: none; max-height: 300px; overflow-y: auto;">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Top-Anchored Global Search -->
-    <div class="card bg-dark border-warning p-3 mb-4 shadow">
-        <div class="input-group">
-            <input type="text" id="globalSearchInput" class="form-control bg-dark text-light border-warning" placeholder="Global Search: Type contractor name, ID, region, or phone..." onkeyup="executeGlobalSearch()">
-            <button class="btn btn-gold px-4 fw-bold" type="button" onclick="executeGlobalSearch()">Search</button>
-        </div>
-        <div id="globalSearchResults" class="mt-3" style="display: none;"></div>
-    </div>
-
-    <div class="row g-4">
-        <!-- Left: Categorized Call Queues -->
-        <div class="col-lg-6">
-            <div class="card bg-dark border-secondary p-4 mb-4">
-                <h5 class="text-light fw-bold mb-3">⭐ Priority Call Queues</h5>
-                <div class="list-group bg-dark" id="callQueueList">
-                    {% for c in white_glove %}
-                    <div class="list-group-item bg-dark border-secondary d-flex justify-content-between align-items-center py-3">
-                        <div>
-                            <h6 class="text-light fw-bold mb-1">{{ c.name }} <span class="badge bg-success ms-2">{{ c.status }}</span></h6>
-                            <small class="text-muted">{{ c.region }} | ID: <code>{{ c.id }}</code> | Phone: {{ c.phone }}</small>
-                        </div>
-                        <button class="btn btn-gold btn-sm fw-bold" onclick='loadActiveLead({{ c | tojson }})'>Load into Dialer</button>
+    <!-- Main Workspace Container -->
+    <div class="container-fluid px-4">
+        
+        <!-- Barometric Pressure & Weather Indicator Banner -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card bg-dark border-secondary p-3 d-flex flex-row justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1 text-info">📈 Barometric Trend: Rising (Favorable Outreach Conditions)</h5>
+                        <p class="mb-0 small text-muted">High-pressure stability active across Alamosa/Bailey CO & NC canopy corridors. Response rates optimal.</p>
                     </div>
-                    {% endfor %}
+                    <div>
+                        <span class="badge bg-success p-2">Weather Score: 92% Optimal</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right: Active Auto-Dialer Lead Workspace & Master Toolbar -->
-        <div class="col-lg-6">
-            <div class="card bg-dark border-warning p-4 shadow mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="text-warning fw-bold mb-0">🎯 Active Dialing Lead Workspace</h5>
-                    <span class="badge bg-secondary" id="activeQueueSource">Source: Manual Selection</span>
-                </div>
-
-                <!-- Populated Lead Details -->
-                <div class="p-3 rounded bg-black border border-secondary mb-3">
-                    <div class="row">
-                        <div class="col-md-6 mb-2">
-                            <label class="small text-muted d-block">Operator / Name</label>
-                            <span id="leadNameDisplay" class="text-light fw-bold fs-5">Select a lead from queue</span>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="small text-muted d-block">Phone Number</label>
-                            <span id="leadPhoneDisplay" class="text-warning fw-bold font-monospace fs-5">—</span>
-                        </div>
-                        <div class="col-12">
-                            <label class="small text-muted d-block">Address / Region</label>
-                            <span id="leadAddressDisplay" class="text-light">—</span>
+        <!-- 4-Zone Categorized Lists Grid -->
+        <div class="row g-4">
+            
+            <!-- Zone 1: White-Glove Auto-Dialer Queue -->
+            <div class="col-xl-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">🛡️ White-Glove Auto-Dialer Queue</h5>
+                        <span class="badge bg-light text-dark">{{ white_glove | length }} Accounts</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover align-middle mb-0">
+                               <thead>
+                                   <tr>
+                                       <th>Contractor</th>
+                                       <th>Region</th>
+                                       <th>Tier / Status</th>
+                                       <th>Action</th>
+                                   </tr>
+                               </thead>
+                               <tbody>
+                                   {% for c in white_glose %}
+                                   <tr>
+                                       <td><strong>{{ c.name }}</strong><br><small class="text-muted">{{ c.id }}</small></td>
+                                       <td>{{ c.region }}</td>
+                                       <td><span class="badge bg-success">{{ c.tier }}</span></td>
+                                       <td>
+                                           <button class="btn btn-sm btn-outline-warning" onclick="openDoctorModal('{{ c.id }}', '{{ c.name }}', '{{ c.status }}', '{{ c.tier }}', {{ c.balance }})">Doctor Override</button>
+                                       </td>
+                                   </tr>
+                                   {% else %}
+                                   <tr>
+                                       <td colspan="4" class="text-center text-muted">No active white-glove accounts in queue.</td>
+                                   </tr>
+                                   {% endfor %}
+                               </tbody>
+                           </table>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Master Action Button Toolbar -->
-                <label class="form-label text-muted small fw-bold text-uppercase mb-2">Instant Action Toolbar</label>
-                <div class="d-flex flex-wrap gap-2 mb-4">
-                    <a id="btnDemo" href="#" target="_blank" class="btn btn-outline-warning btn-sm fw-bold disabled">🖥️ Launch Demo</a>
-                    <button id="btnDoctor" type="button" class="btn btn-outline-info btn-sm fw-bold disabled" onclick="openActiveDoctorModal()">⚡ Doctor Screen</button>
-                    <button id="btnPricing" type="button" class="btn btn-outline-success btn-sm fw-bold disabled" onclick="calculateOnFlyPricing()">📊 On-The-Fly Pricing</button>
-                    <button id="btnCard" type="button" class="btn btn-outline-light btn-sm fw-bold disabled" onclick="openCardEntryModal()">💳 Card Entry / Token</button>
+            <!-- Zone 2: Pilot Conversion Queue -->
+            <div class="col-xl-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">🎯 Pilot Conversion Queue (Usage-Sorted)</h5>
+                        <span class="badge bg-light text-dark">{{ pilots | length }} Active Pilots</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover align-middle mb-0">
+                               <thead>
+                                   <tr>
+                                       <th>Contractor</th>
+                                       <th>Engagement</th>
+                                       <th>Status</th>
+                                       <th>Convert (Waive $299)</th>
+                                   </tr>
+                               </thead>
+                               <tbody>
+                                   {% for p in pilots %}
+                                   <tr>
+                                       <td><strong>{{ p.name }}</strong><br><small class="text-muted">{{ p.id }}</small></td>
+                                       <td><span class="badge bg-info">Score: {{ p.usage_score }}</span></td>
+                                       <td>{{ p.status }}</td>
+                                       <td>
+                                           <button class="btn btn-sm btn-light text-dark fw-bold" onclick="convertPilot('{{ p.id }}')">Waive Retainer & Convert</button>
+                                       </td>
+                                   </tr>
+                                   {% else %}
+                                   <tr>
+                                       <td colspan="4" class="text-center text-muted">No pilots currently active.</td>
+                                   </tr>
+                                   {% endfor %}
+                               </tbody>
+                           </table>
+                        </div>
+                    </div>
                 </div>
+            </div>
 
-                <!-- Call Disposition & Notes -->
-                <form id="liveCallForm">
+            <!-- Zone 3: Broadcaster Callbacks & Press-1 Inbound -->
+            <div class="col-xl-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">⚡ Broadcaster Callbacks & Press-1 Queue</h5>
+                        <span class="badge bg-dark text-light">{{ callbacks | length }} Pending</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover align-middle mb-0">
+                               <thead>
+                                   <tr>
+                                       <th>Prospect</th>
+                                       <th>Region</th>
+                                       <th>Phone</th>
+                                       <th>Action</th>
+                                   </tr>
+                               </thead>
+                               <tbody>
+                                   {% for cb in callbacks %}
+                                   <tr>
+                                       <td><strong>{{ cb.name }}</strong><br><small class="text-muted">{{ cb.id }}</small></td>
+                                       <td>{{ cb.region }}</td>
+                                       <td>{{ cb.phone }}</td>
+                                       <td>
+                                           <a href="tel:{{ cb.phone }}" class="btn btn-sm btn-success">Dial Now</a>
+                                       </td>
+                                   </tr>
+                                   {% else %}
+                                   <tr>
+                                       <td colspan="4" class="text-center text-muted">No pending broadcaster callbacks.</td>
+                                   </tr>
+                                   {% endfor %}
+                               </tbody>
+                           </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zone 4: Expandable Master Directory -->
+            <div class="col-xl-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">📚 Expandable Master Directory</h5>
+                        <span class="badge bg-dark text-light">{{ directory | length }} Total Operators</span>
+                    </div>
+                    <div class="card-body" style="max-height: 350px; overflow-y: auto;">
+                        <div class="list-group list-group-flush bg-transparent">
+                            {% for entry in directory %}
+                            <a href="/d2/?contractor_id={{ entry.id }}" class="list-group-item list-group-item-action bg-dark text-light border-secondary d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ entry.name }}</strong> <small class="text-muted">({{ entry.id }})</small>
+                                    <div class="small text-muted">{{ entry.region }} | {{ entry.tier }}</div>
+                                </div>
+                                <span class="badge bg-primary">View Tenant Page &rarr;</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Doctor Override / CS Modal -->
+    <div class="modal fade" id="doctorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Doctor Screen Override: <span id="modalContractorName"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editContractorId">
                     <div class="mb-3">
-                        <label class="form-label small text-muted">Call Disposition</label>
-                        <select name="disposition" class="form-select bg-dark text-light border-secondary">
-                            <option value="converted_paid">Converted to Paid White-Glove ($299)</option>
-                            <option value="extended_pilot">Extended Pilot Access</option>
-                            <option value="callback_scheduled">Callback Scheduled</option>
-                            <option value="not_interested">Not Interested</option>
+                        <label class="form-label small text-muted">Account Status</label>
+                        <input type="text" id="editModalStatus" class="form-control bg-black text-light border-secondary">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Subscription Tier</label>
+                        <select id="editModalTier" class="form-select bg-black text-light border-secondary">
+                            <option value="Comped Pilot Tier">Comped Pilot Tier</option>
+                            <option value="Self-Managed ($5.00 Unit - Retainer Waived)">Self-Managed ($5.00 Unit — Retainer Waived)</option>
+                            <option value="White-Glove ($299/mo)">White-Glove ($299.00/mo)</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small text-muted">Conversation Notes (Auto-Pauses Auto-Dialer)</label>
-                        <textarea id="liveNotesInput" rows="2" class="form-control bg-dark text-light border-secondary" placeholder="Type notes here..."></textarea>
+                        <label class="form-label small text-muted">Pre-Funded Ledger Balance ($)</label>
+                        <input type="number" step="0.01" id="editModalBalance" class="form-control bg-black text-light border-secondary">
                     </div>
-                    <button type="button" class="btn btn-gold w-100 fw-bold" onclick="saveDispositionAndAdvance()">Save & Advance to Next Lead →</button>
-                </form>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveDoctorOverride()">Save Override</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-let activeLead = null;
+    <!-- Bootstrap & Custom JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global Search Autocomplete Logic
+        document.getElementById('globalSearchInput').addEventListener('input', function() {
+            const query = this.value.trim();
+            const dropdown = document.getElementById('searchResultsDropdown');
+            
+            if (query.length === 0) {
+                dropdown.style.display = 'none';
+                dropdown.innerHTML = '';
+                return;
+            }
+            
+            fetch(`/d6/global-search?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    dropdown.innerHTML = '';
+                    if (data.status === 'success' && data.results.length > 0) {
+                        data.results.forEach(contractor => {
+                            const item = document.createElement('a');
+                            item.href = `/d2/?contractor_id=${contractor.id}`;
+                            item.className = 'list-group-item list-group-item-action bg-dark text-light border-secondary';
+                            item.innerHTML = `<strong>${contractor.name}</strong> (${contractor.id}) — <span class="text-muted">${contractor.region} | ${contractor.tier}</span>`;
+                            dropdown.appendChild(item);
+                        });
+                        dropdown.style.display = 'block';
+                    } else {
+                        dropdown.style.display = 'none';
+                    }
+                });
+        });
 
-function loadActiveLead(lead) {
-    activeLead = lead;
-    document.getElementById('leadNameDisplay').innerText = lead.name + ` (${lead.id})`;
-    document.getElementById('leadPhoneDisplay').innerText = lead.phone;
-    document.getElementById('leadAddressDisplay').innerText = lead.region + ` | Tier: ${lead.tier} | Status: ${lead.status}`;
-    
-    // Enable toolbar buttons
-    document.getElementById('btnDemo').href = `/d2/?contractor_id=${lead.id}&mode=demo`;
-    document.getElementById('btnDemo').classList.remove('disabled');
-    document.getElementById('btnDoctor').classList.remove('disabled');
-    document.getElementById('btnPricing').classList.remove('disabled');
-    document.getElementById('btnCard').classList.remove('disabled');
-}
+        document.addEventListener('click', function(e) {
+            if (!document.getElementById('globalSearchInput').contains(e.target)) {
+                document.getElementById('searchResultsDropdown').style.display = 'none';
+            }
+        });
 
-function openActiveDoctorModal() {
-    if (!activeLead) return;
-    alert(`Opening D6 Control & Record Doctoring for ${activeLead.name}`);
-}
+        // Doctor Modal Trigger
+        function openDoctorModal(id, name, status, tier, balance) {
+            document.getElementById('editContractorId').value = id;
+            document.getElementById('modalContractorName').innerText = name;
+            document.getElementById('editModalStatus').value = status;
+            document.getElementById('editModalTier').value = tier;
+            document.getElementById('editModalBalance').value = balance;
+            
+            new bootstrap.Modal(document.getElementById('doctorModal')).show();
+        }
 
-function calculateOnFlyPricing() {
-    if (!activeLead) return;
-    alert(`Calculating hazard-weighted territory pricing for ${activeLead.region}...`);
-}
+        // Save Doctor Override
+        function saveDoctorOverride() {
+            const contractorId = document.getElementById('editContractorId').value;
+            const status = document.getElementById('editModalStatus').value;
+            const tier = document.getElementById('editModalTier').value;
+            const balance = document.getElementById('editModalBalance').value;
+            
+            fetch('/d6/doctor-screen', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contractor_id: contractorId, status: status, tier: tier, balance: balance })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error saving override.');
+                }
+            });
+        }
 
-function openCardEntryModal() {
-    if (!activeLead) return;
-    alert(`Opening secure tokenized Stripe card entry / reload modal for ${activeLead.name}...`);
-}
-
-function saveDispositionAndAdvance() {
-    alert('Disposition saved. Advancing auto-dialer queue...');
-    document.getElementById('liveNotesInput').value = '';
-}
-</script>
-{% endblock %}
+        // Convert Pilot (Waive Retainer)
+        function convertPilot(contractorId) {
+            if (!confirm("Are you sure you want to waive the $299 retainer and convert this pilot to the $5.00 unit baseline?")) return;
+            
+            fetch('/d6/convert-pilot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contractor_id: contractorId, waive_retainer: true })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Conversion failed.');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
