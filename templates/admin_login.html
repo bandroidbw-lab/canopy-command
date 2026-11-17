@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | Canopy Command D6</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .card { background-color: #1e1e1e; border: 1px solid #333; width: 100%; max-width: 400px; }
+    </style>
+</head>
+<body>
+    <div class="card p-4 shadow-lg">
+        <div class="text-center mb-4">
+            <h3 class="text-warning">🌲 Canopy Command</h3>
+            <p class="small text-muted mb-0">D6 Master Switchboard Portal</p>
+        </div>
+        <form method="POST">
+            <div class="mb-3">
+                <label class="form-label small text-muted">Admin Password</label>
+                <input type="password" name="password" class="form-control bg-black text-light border-secondary" placeholder="Enter password" required autofocus>
+            </div>
+            <button type="submit" class="btn btn-warning w-100 fw-bold">Sign In to Dashboard</button>
+        </form>
+    </div>
+</body>
+</html>
